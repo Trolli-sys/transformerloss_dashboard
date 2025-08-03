@@ -738,7 +738,7 @@
                                  <button id="delete-btn" class="btn-secondary bg-red-50 text-red-600 hover:bg-red-100 border-red-200 hidden">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                     <span>ลบข้อมูลที่แสดง</span>
-                                </button>
+                                 </button>
                                 <button id="calculate-btn" class="btn-primary" disabled>
                                     <div id="loading-spinner" class="spinner hidden"></div>
                                     <span>คำนวณและบันทึกข้อมูล</span>
@@ -1660,6 +1660,7 @@
                     meterBreakdown: allMeterBreakdowns
                 };
 
+                // ++ MODIFIED ++: Added transformer_url and meter_url to the data being saved
                 const dataToSave = {
                     results,
                     totalLoss: totalTransformerEnergy - totalMeterEnergy,
@@ -1671,7 +1672,9 @@
                     mappings: transformerMeterMappings,
                     latitude: latitude,
                     longitude: longitude,
-                    dataSummary: dataSummary, // Add the new summary object
+                    transformer_url: elements.transformerUrl.value.trim(), // ++ ADDED ++
+                    meter_url: elements.meterUrl.value.trim(),             // ++ ADDED ++
+                    dataSummary: dataSummary,
                     lastUpdated: new Date().toISOString()
                 };
                 
@@ -2637,32 +2640,57 @@ ${adminSuggestions || "ไม่มี"}
         }
         
         function setupSelectorListeners(allData) {
+            // ++ MODIFIED ++: This entire function is enhanced for auto-population
+            function clearInputFieldsAndTriggerUpdate() {
+                const fieldsToClear = [elements.transformerUrl, elements.meterUrl, elements.latitudeInput, elements.longitudeInput, elements.authorityInput];
+                fieldsToClear.forEach(field => {
+                    if (field) {
+                        field.value = '';
+                        field.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+                });
+            }
+
             elements.viewAuthoritySelect.addEventListener('change', (e) => {
                 populateTransformerSelector(allData, e.target.value);
                 elements.viewMonthSelect.innerHTML = '<option value="">-- เลือกเดือน --</option>'; 
+                clearInputFieldsAndTriggerUpdate(); // ++ ADDED ++: Clear inputs when authority changes
                 loadSelectedData();
             });
+
             elements.viewTransformerSelect.addEventListener('change', (e) => {
                 const auth = elements.viewAuthoritySelect.value;
                 const trans = e.target.value;
                 populateMonthSelector(allData, auth, trans);
                 
-                // Auto-fill coordinates
+                // ++ ADDED ++: Auto-population logic
                 if (auth && trans && allData[auth]?.[trans]) {
-                    const months = Object.keys(allData[auth][trans]).sort().reverse();
-                    const latestMonthWithCoords = months.find(m => allData[auth][trans][m].latitude && allData[auth][trans][m].longitude);
-                    if (latestMonthWithCoords) {
-                        const data = allAnalysisData[auth][trans][latestMonthWithCoords];
-                        elements.latitudeInput.value = data.latitude;
-                        elements.longitudeInput.value = data.longitude;
-                    } else {
-                        elements.latitudeInput.value = '';
-                        elements.longitudeInput.value = '';
+                    const months = Object.keys(allData[auth][trans]).sort();
+                    const latestMonth = months.pop(); // Get the most recent entry
+                    
+                    if(latestMonth) {
+                        const latestData = allData[auth][trans][latestMonth];
+                        
+                        // Populate Admin Input fields
+                        elements.authorityInput.value = latestData.authority || auth;
+                        elements.transformerUrl.value = latestData.transformer_url || '';
+                        elements.meterUrl.value = latestData.meter_url || '';
+                        elements.latitudeInput.value = latestData.latitude || '';
+                        elements.longitudeInput.value = latestData.longitude || '';
+                        
+                        // Trigger input events to update UI state (like button disability)
+                        [elements.authorityInput, elements.transformerUrl, elements.meterUrl].forEach(el => {
+                            el.dispatchEvent(new Event('input', { bubbles: true }));
+                        });
+                        showSuccess("โหลดข้อมูลล่าสุดของกลุ่มหม้อแปลงนี้แล้ว");
                     }
+                } else {
+                     clearInputFieldsAndTriggerUpdate();
                 }
                 
                 loadSelectedData();
             });
+
             elements.viewMonthSelect.addEventListener('change', () => {
                 loadSelectedData();
             });
@@ -2734,5 +2762,3 @@ ${adminSuggestions || "ไม่มี"}
     </script>
 </body>
 </html>
-```
-
