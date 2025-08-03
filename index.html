@@ -1020,28 +1020,6 @@
                         <div id="suspicious-meters-content" class="hidden">
                             <div id="suspicious-meter-chart"></div>
                             <p id="no-suspicious-meters" class="text-center text-gray-500 py-8 hidden">ไม่พบมิเตอร์ที่น่าสงสัย</p>
-                             <!-- ++ ADDED SECTION: Load Profile Upload & Analysis ++ -->
-                            <div id="load-profile-uploader-section" class="mt-8 border-t pt-6">
-                                <h4 class="text-md font-bold text-gray-800 mb-4 flex items-center">
-                                    <svg class="w-5 h-5 text-indigo-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-4-4V7a4 4 0 014-4h2a4 4 0 014 4v5a4 4 0 01-4-4H7z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a4 4 0 014-4h2a4 4 0 014 4v7a4 4 0 01-4 4h-2a4 4 0 01-4-4v-5z"></path></svg>
-                                    วิเคราะห์ Load Profile มิเตอร์ (ไฟล์ .csv)
-                                </h4>
-                                <div class="space-y-4">
-                                    <div>
-                                        <label for="load-profile-upload" class="sr-only">เลือกไฟล์</label>
-                                        <input type="file" id="load-profile-upload" multiple accept=".csv,text/csv" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"/>
-                                    </div>
-                                    <button id="analyze-load-profile-btn" class="btn-secondary w-full" disabled>
-                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
-                                         <span id="analyze-load-profile-btn-text">เลือกไฟล์เพื่อวิเคราะห์</span>
-                                         <div id="analyze-load-profile-spinner" class="ai-spinner hidden" style="width:16px; height:16px; border-width:2px; border-top-color: var(--gray-500)"></div>
-                                    </button>
-                                </div>
-                                <!-- Container for AI result -->
-                                <div id="load-profile-ai-analysis-container" class="mt-4 prose max-w-none text-gray-600 hidden p-4 bg-gray-50 rounded-lg border">
-                                </div>
-                            </div>
-                            <!-- ++ END ADDED SECTION ++ -->
                         </div>
                     </div>
 
@@ -1317,14 +1295,7 @@
             actionPlanErrorText: document.getElementById('action-plan-error-text'),
 
             // Table elements
-            resultsTable: document.getElementById('results-table'),
-
-            // Load Profile Analysis elements
-            loadProfileUpload: document.getElementById('load-profile-upload'),
-            analyzeLoadProfileBtn: document.getElementById('analyze-load-profile-btn'),
-            analyzeLoadProfileBtnText: document.getElementById('analyze-load-profile-btn-text'),
-            analyzeLoadProfileSpinner: document.getElementById('analyze-load-profile-spinner'),
-            loadProfileAnalysisContainer: document.getElementById('load-profile-ai-analysis-container')
+            resultsTable: document.getElementById('results-table')
         };
 
         // --- UTILITY FUNCTIONS ---
@@ -1648,6 +1619,7 @@
 
                 const keyMetrics = calculateKeyMetrics(transformerData, startDate, endDate);
                 
+                // *** NEW: Generate Data Summary ***
                 const tDateKey = findKey(transformerData[0], ['Date', 'วันที่']);
                 const tEnergyKey = findKey(transformerData[0], ['Energy_Output_kWh', 'KWH_TOT']);
                 const tPowerKey = findKey(transformerData[0], ['P_TOT']);
@@ -1688,6 +1660,7 @@
                     meterBreakdown: allMeterBreakdowns
                 };
 
+                // ++ MODIFIED ++: Added transformer_url and meter_url to the data being saved
                 const dataToSave = {
                     results,
                     totalLoss: totalTransformerEnergy - totalMeterEnergy,
@@ -1699,8 +1672,8 @@
                     mappings: transformerMeterMappings,
                     latitude: latitude,
                     longitude: longitude,
-                    transformer_url: elements.transformerUrl.value.trim(),
-                    meter_url: elements.meterUrl.value.trim(),
+                    transformer_url: elements.transformerUrl.value.trim(), // ++ ADDED ++
+                    meter_url: elements.meterUrl.value.trim(),             // ++ ADDED ++
                     dataSummary: dataSummary,
                     lastUpdated: new Date().toISOString()
                 };
@@ -2282,97 +2255,6 @@ ${currentAnalysisText}
                 elements.generateActionPlanBtn.disabled = false;
              }
         }
-
-        async function handleLoadProfileAnalysis() {
-            const files = elements.loadProfileUpload.files;
-            if (files.length === 0) {
-                return showError("กรุณาเลือกไฟล์ Load Profile (.csv) ก่อน");
-            }
-
-            elements.analyzeLoadProfileBtn.disabled = true;
-            showElement(elements.analyzeLoadProfileSpinner);
-            elements.analyzeLoadProfileBtnText.textContent = 'กำลังประมวลผลไฟล์...';
-            showElement(elements.loadProfileAnalysisContainer);
-            elements.loadProfileAnalysisContainer.innerHTML = `<div class="flex items-center justify-center"><div class="ai-spinner"></div><p class="ml-4">กำลังอ่านและสรุปข้อมูลจากไฟล์...</p></div>`;
-
-            try {
-                const fileReadPromises = Array.from(files).map(file => {
-                    return new Promise((resolve, reject) => {
-                        Papa.parse(file, {
-                            header: true,
-                            skipEmptyLines: true,
-                            complete: results => resolve({ fileName: file.name, data: results.data }),
-                            error: error => reject(new Error(`Error parsing ${file.name}: ${error.message}`))
-                        });
-                    });
-                });
-                
-                const parsedFiles = await Promise.all(fileReadPromises);
-
-                let loadProfileSummaries = '';
-                for (const file of parsedFiles) {
-                    const header = Object.keys(file.data[0] || {});
-                    const demandKey = header.find(k => k.toLowerCase().includes('demand')) || header[5];
-                    const kwhKey = header.find(k => k.toLowerCase() === 'kwh') || header[9];
-                    const dateKey = header.find(k => k.toLowerCase() === 'date') || header[2];
-                    const timeKey = header.find(k => k.toLowerCase() === 'time') || header[3];
-
-                    const numericData = file.data.map(row => ({
-                        demand: parseFloat(row[demandKey]) || 0,
-                        kwh: parseFloat(row[kwhKey]) || 0,
-                        hour: parseInt((row[timeKey] || "00:00").split(':')[0])
-                    })).filter(r => !isNaN(r.demand));
-
-                    if (numericData.length === 0) continue;
-
-                    const totalKwh = numericData.reduce((sum, row) => sum + row.kwh, 0);
-                    const peakDemand = Math.max(...numericData.map(row => row.demand));
-                    const zeroReadings = numericData.filter(row => row.demand === 0).length;
-                    const nightUsageKwh = numericData.filter(r => r.hour < 9 || r.hour >= 22).reduce((sum, r) => sum + r.kwh, 0);
-
-                    loadProfileSummaries += `
----
-**ไฟล์: ${file.fileName}**
-- **การใช้พลังงานรวมจากไฟล์:** ${totalKwh.toFixed(2)} kWh
-- **ความต้องการพลังงานสูงสุด (Peak Demand):** ${peakDemand.toFixed(2)} kW
-- **ช่วงเวลาที่ไม่มีการใช้งาน (Zero Demand):** ${zeroReadings} ครั้ง (จากทั้งหมด ${numericData.length} ครั้ง)
-- **สัดส่วนการใช้งานกลางคืน (22:00-09:00):** ${((nightUsageKwh / totalKwh) * 100).toFixed(1)}%
----`;
-                }
-
-                if (!loadProfileSummaries) throw new Error("ไม่สามารถประมวลผลข้อมูลจากไฟล์ที่เลือกได้");
-
-                elements.analyzeLoadProfileBtnText.textContent = 'กำลังส่งข้อมูลให้ AI...';
-                elements.loadProfileAnalysisContainer.innerHTML = `<div class="flex items-center justify-center"><div class="ai-spinner"></div><p class="ml-4">AI กำลังวิเคราะห์ข้อมูลเชิงลึก...</p></div>`;
-
-                const prompt = `ในฐานะผู้เชี่ยวชาญด้านการวิเคราะห์ระบบไฟฟ้า โปรดทำการวิเคราะห์ข้อมูลเชิงลึกอีกครั้งโดยใช้ข้อมูล Load Profile ที่ผู้ใช้อัปโหลดเข้ามาเพิ่มเติม
-
-**บริบทเดิมจากภาพรวม:**
-${currentAnalysisText}
-
-**ข้อมูล Load Profile โดยละเอียด (จากไฟล์ที่ผู้ใช้อัปโหลด):**
-${loadProfileSummaries}
-
-**คำสั่ง:**
-โปรดวิเคราะห์ข้อมูลทั้งหมดร่วมกัน และตอบคำถามต่อไปนี้:
-1.  **ความสอดคล้อง:** ข้อมูล Load Profile ที่เพิ่งได้รับ สอดคล้องกับบทวิเคราะห์ภาพรวมเดิมหรือไม่? มีประเด็นใดที่ขัดแย้งหรือต้องพิจารณาใหม่?
-2.  **รูปแบบที่น่าสงสัย:** จากข้อมูลราย 15 นาที มีรูปแบบ (pattern) การใช้ไฟฟ้าที่ผิดปกติหรือไม่? (เช่น การใช้ไฟคงที่ตลอด 24 ชั่วโมง, การพุ่งสูงขึ้นอย่างผิดปกติในเวลาสั้นๆ, หรือการที่ค่าเป็นศูนย์เป็นเวลานานผิดปกติ)
-3.  **ข้อสรุปใหม่:** จากข้อมูลทั้งหมดที่มีในตอนนี้ ข้อสันนิษฐานเกี่ยวกับสาเหตุของค่า Loss (เช่น มิเตอร์ชำรุด, การลักลอบใช้ไฟ, หรือเป็นพฤติกรรมการใช้งานปกติ) ยังคงเหมือนเดิม หรือเปลี่ยนแปลงไปอย่างไร?
-4.  **คำแนะนำถัดไป:** เสนอขั้นตอนการตรวจสอบภาคสนามที่เจาะจงมากขึ้น 2-3 ข้อ โดยอ้างอิงจากข้อมูล Load Profile ที่ได้มาใหม่นี้`;
-
-                const detailedAnalysis = await callGeminiAPI(prompt);
-                elements.loadProfileAnalysisContainer.innerHTML = marked.parse(detailedAnalysis);
-
-            } catch (error) {
-                console.error("Load Profile Analysis Error:", error);
-                showError(`เกิดข้อผิดพลาด: ${error.message}`);
-                elements.loadProfileAnalysisContainer.innerHTML = `<p class="text-red-600">การวิเคราะห์ล้มเหลว: ${error.message}</p>`;
-            } finally {
-                elements.analyzeLoadProfileBtn.disabled = false;
-                hideElement(elements.analyzeLoadProfileSpinner);
-                elements.analyzeLoadProfileBtnText.textContent = `วิเคราะห์ ${files.length} ไฟล์ด้วย AI`;
-            }
-        }
         
         // --- SELECTOR FUNCTIONS ---
         function populateSelectors(allData) {
@@ -2755,20 +2637,10 @@ ${adminSuggestions || "ไม่มี"}
                 elements.meterChartTitle.textContent = 'มิเตอร์ที่น่าสงสัย';
                 elements.meterChartSubtitle.textContent = 'มิเตอร์ที่มียอดใช้พลังงานสะสมเป็น 0 หรือติดลบ';
             });
-
-             elements.loadProfileUpload.addEventListener('change', () => {
-                if (elements.loadProfileUpload.files.length > 0) {
-                    elements.analyzeLoadProfileBtn.disabled = false;
-                    elements.analyzeLoadProfileBtnText.textContent = `วิเคราะห์ ${elements.loadProfileUpload.files.length} ไฟล์ด้วย AI`;
-                } else {
-                    elements.analyzeLoadProfileBtn.disabled = true;
-                    elements.analyzeLoadProfileBtnText.textContent = 'เลือกไฟล์เพื่อวิเคราะห์';
-                }
-            });
-            elements.analyzeLoadProfileBtn.addEventListener('click', handleLoadProfileAnalysis);
         }
         
         function setupSelectorListeners(allData) {
+            // ++ MODIFIED ++: This entire function is enhanced for auto-population
             function clearInputFieldsAndTriggerUpdate() {
                 const fieldsToClear = [elements.transformerUrl, elements.meterUrl, elements.latitudeInput, elements.longitudeInput, elements.authorityInput];
                 fieldsToClear.forEach(field => {
@@ -2782,7 +2654,7 @@ ${adminSuggestions || "ไม่มี"}
             elements.viewAuthoritySelect.addEventListener('change', (e) => {
                 populateTransformerSelector(allData, e.target.value);
                 elements.viewMonthSelect.innerHTML = '<option value="">-- เลือกเดือน --</option>'; 
-                clearInputFieldsAndTriggerUpdate();
+                clearInputFieldsAndTriggerUpdate(); // ++ ADDED ++: Clear inputs when authority changes
                 loadSelectedData();
             });
 
@@ -2791,19 +2663,22 @@ ${adminSuggestions || "ไม่มี"}
                 const trans = e.target.value;
                 populateMonthSelector(allData, auth, trans);
                 
+                // ++ ADDED ++: Auto-population logic
                 if (auth && trans && allData[auth]?.[trans]) {
                     const months = Object.keys(allData[auth][trans]).sort();
-                    const latestMonth = months.pop(); 
+                    const latestMonth = months.pop(); // Get the most recent entry
                     
                     if(latestMonth) {
                         const latestData = allData[auth][trans][latestMonth];
                         
+                        // Populate Admin Input fields
                         elements.authorityInput.value = latestData.authority || auth;
                         elements.transformerUrl.value = latestData.transformer_url || '';
                         elements.meterUrl.value = latestData.meter_url || '';
                         elements.latitudeInput.value = latestData.latitude || '';
                         elements.longitudeInput.value = latestData.longitude || '';
                         
+                        // Trigger input events to update UI state (like button disability)
                         [elements.authorityInput, elements.transformerUrl, elements.meterUrl].forEach(el => {
                             el.dispatchEvent(new Event('input', { bubbles: true }));
                         });
