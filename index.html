@@ -2112,7 +2112,7 @@
         // --- AI ANALYSIS & ACTION PLAN (GEMINI API) ---
         async function callGeminiAPI(prompt) {
             const apiKey = "AIzaSyDwU3rcd0Lr5hS9BsBPcIXitu5YL-IEONQ"; // ใช้ Key ของคุณ
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${apiKey}`;
             const response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
