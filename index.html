@@ -11,8 +11,6 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
-    <!-- ADD Google Maps API Script -->
-    <!-- !!! IMPORTANT: Replace YOUR_API_KEY_HERE with your actual Google Maps API Key !!! -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC-bqu1W2KS1GHq6uig66gcn-s0qcXNqHs"></script>
     
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -457,6 +455,17 @@
                         <label for="report-details" class="block text-sm font-medium text-gray-700 mb-2">รายละเอียดการแก้ไข</label>
                         <textarea id="report-details" class="textarea-field" placeholder="อธิบายการดำเนินการแก้ไขปัญหาตามบทวิเคราะห์ของ AI..." required></textarea>
                     </div>
+                    
+                    <!-- MODIFIED FOR FEATURE 6: Image Upload -->
+                    <div>
+                        <label for="report-images" class="block text-sm font-medium text-gray-700 mb-2">แนบรูปภาพประกอบ (ถ้ามี)</label>
+                        <input type="file" id="report-images" multiple accept="image/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
+                        <div id="image-preview-container" class="mt-4 flex flex-wrap gap-4">
+                            <!-- Image previews will be shown here -->
+                        </div>
+                    </div>
+                    <!-- END MODIFICATION -->
+
                     <div class="pt-4 flex justify-end">
                         <button type="submit" class="btn-primary">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
@@ -492,6 +501,11 @@
                             <strong class="text-gray-500 text-sm">รายละเอียดการแก้ไข:</strong>
                             <p class="mt-1 text-gray-700 bg-white p-3 rounded-md" id="details-report-details"></p>
                         </div>
+                        <!-- MODIFIED FOR FEATURE 6: Image Display -->
+                        <div id="details-image-gallery" class="mt-4">
+                            <!-- Uploaded images will be shown here -->
+                        </div>
+                        <!-- END MODIFICATION -->
                     </div>
 
                     <!-- Admin Suggestion Section -->
@@ -886,7 +900,9 @@
                     <div class="metric-card">
                         <div class="metric-label">พลังงานจ่ายออก</div>
                         <div class="metric-value text-blue-600" id="kpi-transformer-energy">0</div>
-                        <div class="text-sm text-gray-500 mt-1">kWh</div>
+                        <!-- MODIFIED FOR FEATURE 1: KPI Context -->
+                        <div class="text-sm font-semibold mt-1" id="kpi-transformer-energy-change"></div>
+                        <!-- END MODIFICATION -->
                         <div class="absolute top-4 right-4">
                             <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
                                 <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -899,7 +915,9 @@
                     <div class="metric-card">
                         <div class="metric-label">พลังงานรับเข้า</div>
                         <div class="metric-value text-green-600" id="kpi-meter-energy">0</div>
-                        <div class="text-sm text-gray-500 mt-1">kWh</div>
+                        <!-- MODIFIED FOR FEATURE 1: KPI Context -->
+                        <div class="text-sm font-semibold mt-1" id="kpi-meter-energy-change"></div>
+                        <!-- END MODIFICATION -->
                         <div class="absolute top-4 right-4">
                             <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
                                 <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -912,7 +930,9 @@
                     <div class="metric-card">
                         <div class="metric-label">ค่า Loss</div>
                         <div class="metric-value text-red-600" id="kpi-loss">0</div>
-                        <div class="text-sm text-gray-500 mt-1">kWh</div>
+                        <!-- MODIFIED FOR FEATURE 1: KPI Context -->
+                        <div class="text-sm font-semibold mt-1" id="kpi-loss-change"></div>
+                        <!-- END MODIFICATION -->
                         <div class="absolute top-4 right-4">
                             <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
                                 <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -925,7 +945,9 @@
                     <div class="metric-card">
                         <div class="metric-label">เปอร์เซ็นต์ Loss</div>
                         <div class="metric-value text-orange-600" id="kpi-loss-percent">0%</div>
-                        <div class="text-sm text-gray-500 mt-1">ของพลังงานรวม</div>
+                        <!-- MODIFIED FOR FEATURE 1: KPI Context -->
+                        <div class="text-sm font-semibold mt-1" id="kpi-loss-percent-change"></div>
+                        <!-- END MODIFICATION -->
                         <div class="absolute top-4 right-4">
                             <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
                                 <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1202,6 +1224,9 @@
             reportAiAnalysisContent: document.getElementById('report-ai-analysis-content'),
             deleteReportBtn: document.getElementById('delete-report-btn'),
             useAiAnalysisAsSuggestionBtn: document.getElementById('use-ai-analysis-as-suggestion-btn'),
+            // MODIFIED FOR FEATURE 6: Image Display
+            detailsImageGallery: document.getElementById('details-image-gallery'),
+            // END MODIFICATION
 
             // Auth elements
             adminLoginBtn: document.getElementById('admin-login-btn'),
@@ -1366,6 +1391,33 @@
             elements.adminSuggestions.value = report.admin_suggestions || '';
             elements.reportAiAnalysisContent.innerHTML = report.ai_report_analysis ? marked.parse(report.ai_report_analysis) : '<p class="text-gray-500">ยังไม่มีการวิเคราะห์รายงานนี้</p>';
             
+            // MODIFIED FOR FEATURE 6: Image Display
+            elements.detailsImageGallery.innerHTML = ''; // Clear previous images
+            if (report.image_urls && report.image_urls.length > 0) {
+                const galleryTitle = document.createElement('strong');
+                galleryTitle.className = 'text-gray-500 text-sm';
+                galleryTitle.textContent = 'รูปภาพประกอบ:';
+                elements.detailsImageGallery.appendChild(galleryTitle);
+
+                const imageContainer = document.createElement('div');
+                imageContainer.className = 'mt-2 flex flex-wrap gap-4';
+                report.image_urls.forEach(url => {
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.target = '_blank';
+                    
+                    const img = document.createElement('img');
+                    img.src = url;
+                    img.className = 'w-32 h-32 object-cover rounded-lg border-2 border-gray-200 hover:border-blue-500 transition-all';
+                    img.alt = 'ภาพประกอบรายงาน';
+                    
+                    link.appendChild(img);
+                    imageContainer.appendChild(link);
+                });
+                elements.detailsImageGallery.appendChild(imageContainer);
+            }
+            // END MODIFICATION
+
             toggleElement(elements.useAiAnalysisAsSuggestionBtn, !!report.ai_report_analysis);
             currentReportAiAnalysisText = report.ai_report_analysis || '';
             
@@ -1619,7 +1671,6 @@
 
                 const keyMetrics = calculateKeyMetrics(transformerData, startDate, endDate);
                 
-                // ++ NEW: Generate Detailed Data Summary for AI analysis ++
                 const tDateKey = findKey(transformerData[0], ['Date', 'วันที่']);
                 const tEnergyKey = findKey(transformerData[0], ['Energy_Output_kWh', 'KWH_TOT']);
                 const tPowerKey = findKey(transformerData[0], ['P_TOT']);
@@ -1673,7 +1724,7 @@
                     longitude: longitude,
                     transformer_url: elements.transformerUrl.value.trim(),
                     meter_url: elements.meterUrl.value.trim(),
-                    dataSummary: dataSummary, // ++ NEW: Add detailed summary to the payload
+                    dataSummary: dataSummary,
                     lastUpdated: new Date().toISOString()
                 };
                 
@@ -1759,7 +1810,7 @@
         }
         
         // --- DISPLAY FUNCTIONS ---
-        async function displayResults(currentMonthData, historicalData) { // ++ MODIFIED ++: Added historicalData parameter
+        async function displayResults(currentMonthData, historicalData) {
             hideElement(elements.actionPlanSection);
             hideElement(elements.actionButtonsContainer);
             
@@ -1770,13 +1821,57 @@
             const avgLossPercent = currentMonthData.totalTransformerEnergy > 0 ? (currentMonthData.totalLoss / currentMonthData.totalTransformerEnergy) * 100 : 0;
             elements.kpiLossPercent.textContent = `${avgLossPercent.toFixed(2)}%`;
 
+            // MODIFIED FOR FEATURE 1: KPI Context
+            updateKpiContext(currentMonthData, historicalData);
+            // END MODIFICATION
+
             updateKeyMetrics(currentMonthData);
             updateResultsTable(currentMonthData);
-            renderCharts(currentMonthData, historicalData); // ++ MODIFIED ++: Pass historicalData
+            renderCharts(currentMonthData, historicalData);
             renderTransformerMap(currentMonthData);
-            await getAiAnalysis(currentMonthData.results, avgLossPercent, currentMonthData.dataSummary, historicalData); // ++ MODIFIED ++: Pass both summaries
+            await getAiAnalysis(currentMonthData.results, avgLossPercent, currentMonthData.dataSummary, historicalData);
             await checkAndDisplayFeedback();
         }
+
+        // MODIFIED FOR FEATURE 1: KPI Context
+        function updateKpiContext(currentData, historicalData) {
+            const kpiContextMap = [
+                { key: 'totalTransformerEnergy', elementId: 'kpi-transformer-energy-change', goodIf: 'decrease' },
+                { key: 'totalMeterEnergy', elementId: 'kpi-meter-energy-change', goodIf: 'decrease' },
+                { key: 'totalLoss', elementId: 'kpi-loss-change', goodIf: 'decrease' },
+                { key: 'lossPercent', elementId: 'kpi-loss-percent-change', goodIf: 'decrease' }
+            ];
+
+            const sortedMonths = Object.keys(historicalData.monthlyLoss).sort();
+            const currentMonthId = sortedMonths[sortedMonths.length - 1];
+            const previousMonthId = sortedMonths[sortedMonths.length - 2];
+
+            const previousData = previousMonthId ? allAnalysisData[currentData.authority][currentData.mappings.map(m=>m.transformerId).join('_')][previousMonthId] : null;
+
+            kpiContextMap.forEach(kpi => {
+                const changeEl = document.getElementById(kpi.elementId);
+                changeEl.textContent = ''; // Clear previous text
+                
+                if (previousData) {
+                    const currentValue = kpi.key === 'lossPercent' 
+                        ? (currentData.totalTransformerEnergy > 0 ? (currentData.totalLoss / currentData.totalTransformerEnergy) * 100 : 0)
+                        : currentData[kpi.key];
+                    
+                    const previousValue = kpi.key === 'lossPercent'
+                        ? (previousData.totalTransformerEnergy > 0 ? (previousData.totalLoss / previousData.totalTransformerEnergy) * 100 : 0)
+                        : previousData[kpi.key];
+
+                    if (previousValue !== 0) {
+                        const change = ((currentValue - previousValue) / Math.abs(previousValue)) * 100;
+                        const isGood = (kpi.goodIf === 'decrease' && change < 0) || (kpi.goodIf === 'increase' && change > 0);
+                        
+                        changeEl.textContent = `${change > 0 ? '🔺' : '✅'} ${Math.abs(change).toFixed(1)}% vs Last Month`;
+                        changeEl.className = `text-sm font-semibold mt-1 ${isGood ? 'text-green-500' : 'text-red-500'}`;
+                    }
+                }
+            });
+        }
+        // END MODIFICATION
 
         function calculateAndDisplayOverallSummary(allData) {
             let totalTransformers = 0;
@@ -1846,10 +1941,10 @@
         }
 
         // --- CHART FUNCTIONS ---
-        function renderCharts(currentMonthData, historicalData) { // ++ MODIFIED ++
+        function renderCharts(currentMonthData, historicalData) {
             renderTrendChart(currentMonthData);
-            renderMeterChart(historicalData); // ++ MODIFIED ++: Now uses aggregated historical data
-            renderSuspiciousMeterChart(historicalData); // ++ MODIFIED ++
+            renderMeterChart(historicalData);
+            renderSuspiciousMeterChart(historicalData);
         }
 
         function renderHighestLossChart(allData) {
@@ -1975,7 +2070,6 @@
             charts.trend.render();
         }
         
-        // ++ MODIFIED: This chart now uses aggregated historical data for a more accurate view
         function renderMeterChart(historicalData) {
             if (charts.meter) charts.meter.destroy();
 
@@ -2021,7 +2115,6 @@
             charts.meter.render();
         }
 
-        // ++ MODIFIED: This chart also uses aggregated historical data
         function renderSuspiciousMeterChart(historicalData) {
             if (charts.suspiciousMeter) charts.suspiciousMeter.destroy();
 
@@ -2061,7 +2154,6 @@
             charts.suspiciousMeter.render();
         }
 
-        // *** NEW: Map Rendering Function (Google Maps) ***
         function renderTransformerMap(data) {
             const lat = data.latitude;
             const lon = data.longitude;
@@ -2077,14 +2169,14 @@
                     mapInstance = new google.maps.Map(elements.transformerMapContainer, {
                         center: position,
                         zoom: 16,
-                        mapId: 'TRANSFORMER_LOSS_MAP' // Optional: for cloud-based styling
+                        mapId: 'TRANSFORMER_LOSS_MAP'
                     });
                 } else {
                     mapInstance.setCenter(position);
                 }
 
                 if (mapMarker) {
-                    mapMarker.setMap(null); // Remove previous marker
+                    mapMarker.setMap(null);
                 }
 
                 mapMarker = new google.maps.Marker({
@@ -2104,7 +2196,6 @@
                     });
                 });
                 
-                // Open it by default
                 infoWindow.open({ anchor: mapMarker, map: mapInstance });
 
             } else {
@@ -2115,7 +2206,7 @@
 
         // --- AI ANALYSIS & ACTION PLAN (GEMINI API) ---
         async function callGeminiAPI(prompt) {
-            const apiKey = "AIzaSyDwU3rcd0Lr5hS9BsBPcIXitu5YL-IEONQ"; // ใช้ Key ของคุณ
+            const apiKey = "AIzaSyDwU3rcd0Lr5hS9BsBPcIXitu5YL-IEONQ";
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${apiKey}`;
             const response = await fetch(apiUrl, {
                 method: 'POST',
@@ -2136,7 +2227,6 @@
             throw new Error("ไม่ได้รับผลลัพธ์ที่ถูกต้องจาก AI");
         }
 
-        // ++ MODIFIED: Major upgrade to the AI analysis function and prompt
         async function getAiAnalysis(results, avgLossPercent, dataSummary, historicalData) {
             showElement(elements.aiLoader);
             hideElement(elements.aiContent);
@@ -2287,12 +2377,11 @@ ${currentAnalysisText}
             });
         }
         
-        // ++ NEW: Helper function to aggregate historical data for the selected group
         function getHistoricalDataForGroup(auth, trans) {
             const groupData = allAnalysisData[auth]?.[trans] || {};
             const aggregatedData = {
                 meterMonthlyTotals: {},
-                monthlyLoss: []
+                monthlyLoss: {} // MODIFIED FOR FEATURE 1: Changed to object for easier lookup
             };
 
             const sortedMonths = Object.keys(groupData).sort();
@@ -2300,7 +2389,15 @@ ${currentAnalysisText}
             for (const month of sortedMonths) {
                 const monthData = groupData[month];
                 const lossPercent = monthData.totalTransformerEnergy > 0 ? (monthData.totalLoss / monthData.totalTransformerEnergy) * 100 : 0;
-                aggregatedData.monthlyLoss.push({ month, lossPercent });
+                // MODIFIED FOR FEATURE 1: Store full data object
+                aggregatedData.monthlyLoss[month] = { 
+                    month, 
+                    lossPercent, 
+                    totalLoss: monthData.totalLoss,
+                    totalTransformerEnergy: monthData.totalTransformerEnergy,
+                    totalMeterEnergy: monthData.totalMeterEnergy
+                };
+                // END MODIFICATION
 
                 if (monthData.dataSummary && monthData.dataSummary.meterBreakdown) {
                     monthData.dataSummary.meterBreakdown.forEach(meter => {
@@ -2315,7 +2412,6 @@ ${currentAnalysisText}
             return aggregatedData;
         }
 
-        // ++ MODIFIED: Now fetches and passes historical data
         async function loadSelectedData() {
             const auth = elements.viewAuthoritySelect.value;
             const trans = elements.viewTransformerSelect.value;
@@ -2327,8 +2423,8 @@ ${currentAnalysisText}
                 hideElement(elements.userSelectionPrompt);
                 showElement(elements.resultsSection);
                 const currentMonthData = allAnalysisData[auth][trans][month];
-                const historicalData = getHistoricalDataForGroup(auth, trans); // Get all historical data for this group
-                await displayResults(currentMonthData, historicalData); // Pass both to the display function
+                const historicalData = getHistoricalDataForGroup(auth, trans);
+                await displayResults(currentMonthData, historicalData);
             } else {
                  hideElement(elements.resultsSection);
                  showElement(elements.userSelectionPrompt);
@@ -2395,6 +2491,7 @@ ${currentAnalysisText}
         }
 
         // --- NEW REPORTING FUNCTIONS ---
+        // MODIFIED FOR FEATURE 6: Image Upload
         async function handleSaveReport(event) {
             event.preventDefault();
             const btn = event.submitter;
@@ -2408,7 +2505,8 @@ ${currentAnalysisText}
                 authority: elements.viewAuthoritySelect.value,
                 transformer_id: elements.viewTransformerSelect.value,
                 month: elements.viewMonthSelect.value,
-                analysis_doc_id: `${elements.viewAuthoritySelect.value}_${elements.viewTransformerSelect.value}_${elements.viewMonthSelect.value}`
+                analysis_doc_id: `${elements.viewAuthoritySelect.value}_${elements.viewTransformerSelect.value}_${elements.viewMonthSelect.value}`,
+                image_urls: [] // Start with an empty array
             };
 
             if (!reportData.reporter_name || !reportData.report_details || !reportData.authority || !reportData.transformer_id || !reportData.month) {
@@ -2418,16 +2516,42 @@ ${currentAnalysisText}
             }
 
             try {
+                // 1. Handle image uploads first
+                const imageFiles = document.getElementById('report-images').files;
+                if (imageFiles.length > 0) {
+                    const uploadPromises = Array.from(imageFiles).map(file => {
+                        const filePath = `public/${reportData.reporter_name.replace(/\s+/g, '_')}_${Date.now()}_${file.name}`;
+                        return supabase.storage.from('report-images').upload(filePath, file);
+                    });
+
+                    const uploadResults = await Promise.all(uploadPromises);
+                    
+                    const imageUrls = [];
+                    for (const result of uploadResults) {
+                        if (result.error) {
+                            throw new Error(`อัปโหลดไฟล์ล้มเหลว: ${result.error.message}`);
+                        }
+                        const { data } = supabase.storage.from('report-images').getPublicUrl(result.data.path);
+                        imageUrls.push(data.publicUrl);
+                    }
+                    reportData.image_urls = imageUrls;
+                }
+
+                // 2. Insert the report data (with image URLs) into the table
                 const { error } = await supabase.from('edit_reports').insert([reportData]);
                 if (error) throw error;
+
                 showSuccess("บันทึกรายงานการแก้ไขสำเร็จแล้ว");
                 hideModal('edit-report-modal-overlay');
+                document.getElementById('edit-report-form').reset();
+                document.getElementById('image-preview-container').innerHTML = '';
             } catch (error) {
                 showError(`เกิดข้อผิดพลาดในการบันทึก: ${error.message}`);
             } finally {
                  btn.disabled = false; btn.innerHTML = 'ส่งรายงาน';
             }
         }
+        // END MODIFICATION
         
         async function fetchAndDisplayReports() {
             const { data: reports, error } = await supabase.from('edit_reports').select('*').order('created_at', { ascending: false });
@@ -2623,6 +2747,29 @@ ${adminSuggestions || "ไม่มี"}
 
             elements.generateActionPlanBtn.addEventListener('click', generateActionPlan);
 
+            // MODIFIED FOR FEATURE 6: Image Preview
+            document.getElementById('report-images').addEventListener('change', (event) => {
+                const previewContainer = document.getElementById('image-preview-container');
+                previewContainer.innerHTML = ''; // Clear previous previews
+                const files = event.target.files;
+                if (files.length > 5) {
+                    showError("สามารถอัปโหลดได้สูงสุด 5 รูปภาพ");
+                    event.target.value = ''; // Clear the selection
+                    return;
+                }
+                Array.from(files).forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.className = 'w-24 h-24 object-cover rounded-lg border-2 border-gray-200';
+                        previewContainer.appendChild(img);
+                    };
+                    reader.readAsDataURL(file);
+                });
+            });
+            // END MODIFICATION
+
             // Meter Chart Tabs
             elements.topMetersTab.addEventListener('click', () => {
                 elements.topMetersTab.classList.add('active');
@@ -2643,7 +2790,6 @@ ${adminSuggestions || "ไม่มี"}
         }
         
         function setupSelectorListeners(allData) {
-            // ++ MODIFIED ++: This entire function is enhanced for auto-population
             function clearInputFieldsAndTriggerUpdate() {
                 const fieldsToClear = [elements.transformerUrl, elements.meterUrl, elements.latitudeInput, elements.longitudeInput, elements.authorityInput];
                 fieldsToClear.forEach(field => {
@@ -2657,7 +2803,7 @@ ${adminSuggestions || "ไม่มี"}
             elements.viewAuthoritySelect.addEventListener('change', (e) => {
                 populateTransformerSelector(allData, e.target.value);
                 elements.viewMonthSelect.innerHTML = '<option value="">-- เลือกเดือน --</option>'; 
-                clearInputFieldsAndTriggerUpdate(); // ++ ADDED ++: Clear inputs when authority changes
+                clearInputFieldsAndTriggerUpdate();
                 loadSelectedData();
             });
 
@@ -2666,22 +2812,19 @@ ${adminSuggestions || "ไม่มี"}
                 const trans = e.target.value;
                 populateMonthSelector(allData, auth, trans);
                 
-                // ++ ADDED ++: Auto-population logic
                 if (auth && trans && allData[auth]?.[trans]) {
                     const months = Object.keys(allData[auth][trans]).sort();
-                    const latestMonth = months.pop(); // Get the most recent entry
+                    const latestMonth = months.pop();
                     
                     if(latestMonth) {
                         const latestData = allData[auth][trans][latestMonth];
                         
-                        // Populate Admin Input fields
                         elements.authorityInput.value = latestData.authority || auth;
                         elements.transformerUrl.value = latestData.transformer_url || '';
                         elements.meterUrl.value = latestData.meter_url || '';
                         elements.latitudeInput.value = latestData.latitude || '';
                         elements.longitudeInput.value = latestData.longitude || '';
                         
-                        // Trigger input events to update UI state (like button disability)
                         [elements.authorityInput, elements.transformerUrl, elements.meterUrl].forEach(el => {
                             el.dispatchEvent(new Event('input', { bubbles: true }));
                         });
