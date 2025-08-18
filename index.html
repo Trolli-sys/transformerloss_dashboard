@@ -1619,7 +1619,7 @@
 
                 const keyMetrics = calculateKeyMetrics(transformerData, startDate, endDate);
                 
-                // *** NEW: Generate Data Summary ***
+                // ++ NEW: Generate Detailed Data Summary for AI analysis ++
                 const tDateKey = findKey(transformerData[0], ['Date', 'วันที่']);
                 const tEnergyKey = findKey(transformerData[0], ['Energy_Output_kWh', 'KWH_TOT']);
                 const tPowerKey = findKey(transformerData[0], ['P_TOT']);
@@ -1660,7 +1660,6 @@
                     meterBreakdown: allMeterBreakdowns
                 };
 
-                // ++ MODIFIED ++: Added transformer_url and meter_url to the data being saved
                 const dataToSave = {
                     results,
                     totalLoss: totalTransformerEnergy - totalMeterEnergy,
@@ -1672,9 +1671,9 @@
                     mappings: transformerMeterMappings,
                     latitude: latitude,
                     longitude: longitude,
-                    transformer_url: elements.transformerUrl.value.trim(), // ++ ADDED ++
-                    meter_url: elements.meterUrl.value.trim(),             // ++ ADDED ++
-                    dataSummary: dataSummary,
+                    transformer_url: elements.transformerUrl.value.trim(),
+                    meter_url: elements.meterUrl.value.trim(),
+                    dataSummary: dataSummary, // ++ NEW: Add detailed summary to the payload
                     lastUpdated: new Date().toISOString()
                 };
                 
@@ -1760,7 +1759,7 @@
         }
         
         // --- DISPLAY FUNCTIONS ---
-        async function displayResults(currentMonthData, historicalData) {
+        async function displayResults(currentMonthData, historicalData) { // ++ MODIFIED ++: Added historicalData parameter
             hideElement(elements.actionPlanSection);
             hideElement(elements.actionButtonsContainer);
             
@@ -1773,9 +1772,9 @@
 
             updateKeyMetrics(currentMonthData);
             updateResultsTable(currentMonthData);
-            renderCharts(currentMonthData, historicalData);
+            renderCharts(currentMonthData, historicalData); // ++ MODIFIED ++: Pass historicalData
             renderTransformerMap(currentMonthData);
-            await getAiAnalysis(currentMonthData.results, avgLossPercent, currentMonthData.dataSummary, historicalData);
+            await getAiAnalysis(currentMonthData.results, avgLossPercent, currentMonthData.dataSummary, historicalData); // ++ MODIFIED ++: Pass both summaries
             await checkAndDisplayFeedback();
         }
 
@@ -1847,10 +1846,10 @@
         }
 
         // --- CHART FUNCTIONS ---
-        function renderCharts(currentMonthData, historicalData) {
+        function renderCharts(currentMonthData, historicalData) { // ++ MODIFIED ++
             renderTrendChart(currentMonthData);
-            renderMeterChart(historicalData);
-            renderSuspiciousMeterChart(historicalData);
+            renderMeterChart(historicalData); // ++ MODIFIED ++: Now uses aggregated historical data
+            renderSuspiciousMeterChart(historicalData); // ++ MODIFIED ++
         }
 
         function renderHighestLossChart(allData) {
@@ -1975,7 +1974,8 @@
             charts.trend = new ApexCharts(elements.trendChart, trendOptions);
             charts.trend.render();
         }
-
+        
+        // ++ MODIFIED: This chart now uses aggregated historical data for a more accurate view
         function renderMeterChart(historicalData) {
             if (charts.meter) charts.meter.destroy();
 
@@ -2021,6 +2021,7 @@
             charts.meter.render();
         }
 
+        // ++ MODIFIED: This chart also uses aggregated historical data
         function renderSuspiciousMeterChart(historicalData) {
             if (charts.suspiciousMeter) charts.suspiciousMeter.destroy();
 
@@ -2135,6 +2136,7 @@
             throw new Error("ไม่ได้รับผลลัพธ์ที่ถูกต้องจาก AI");
         }
 
+        // ++ MODIFIED: Major upgrade to the AI analysis function and prompt
         async function getAiAnalysis(results, avgLossPercent, dataSummary, historicalData) {
             showElement(elements.aiLoader);
             hideElement(elements.aiContent);
@@ -2284,7 +2286,8 @@ ${currentAnalysisText}
                 elements.viewMonthSelect.innerHTML += `<option value="${month}">${month}</option>`;
             });
         }
-
+        
+        // ++ NEW: Helper function to aggregate historical data for the selected group
         function getHistoricalDataForGroup(auth, trans) {
             const groupData = allAnalysisData[auth]?.[trans] || {};
             const aggregatedData = {
@@ -2312,6 +2315,7 @@ ${currentAnalysisText}
             return aggregatedData;
         }
 
+        // ++ MODIFIED: Now fetches and passes historical data
         async function loadSelectedData() {
             const auth = elements.viewAuthoritySelect.value;
             const trans = elements.viewTransformerSelect.value;
@@ -2323,8 +2327,8 @@ ${currentAnalysisText}
                 hideElement(elements.userSelectionPrompt);
                 showElement(elements.resultsSection);
                 const currentMonthData = allAnalysisData[auth][trans][month];
-                const historicalData = getHistoricalDataForGroup(auth, trans);
-                await displayResults(currentMonthData, historicalData);
+                const historicalData = getHistoricalDataForGroup(auth, trans); // Get all historical data for this group
+                await displayResults(currentMonthData, historicalData); // Pass both to the display function
             } else {
                  hideElement(elements.resultsSection);
                  showElement(elements.userSelectionPrompt);
