@@ -656,7 +656,7 @@
                                 พารามิเตอร์การวิเคราะห์
                             </h3>
 
-                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                                 <div>
                                     <label for="authority-input" class="block text-sm font-medium text-gray-700 mb-2">การไฟฟ้าที่รับผิดชอบ</label>
                                     <input type="text" id="authority-input" class="input-field" placeholder="เช่น ยะลา, สงขลา">
@@ -670,10 +670,15 @@
                                     <input type="date" id="end-date-input" class="input-field">
                                 </div>
                                 <div>
-                                    <label for="month-input" class="block text-sm font-medium text-gray-700 mb-2">เดือนข้อมูลมิเตอร์</label>
+                                    <label for="month-input" class="block text-sm font-medium text-gray-700 mb-2">เดือนข้อมูลมิเตอร์ (KWH_)</label>
                                     <input type="month" id="month-input" class="input-field">
                                 </div>
-                                <!-- *** NEW: Location Inputs *** -->
+                                <!-- START MODIFICATION -->
+                                <div>
+                                    <label for="analysis-month-input" class="block text-sm font-medium text-gray-700 mb-2">เดือนที่ทำการวิเคราะห์</label>
+                                    <input type="month" id="analysis-month-input" class="input-field">
+                                </div>
+                                <!-- END MODIFICATION -->
                                 <div>
                                     <label for="latitude-input" class="block text-sm font-medium text-gray-700 mb-2">ละติจูด (Latitude)</label>
                                     <input type="number" step="any" id="latitude-input" class="input-field" placeholder="เช่น 6.8941">
@@ -1148,7 +1153,7 @@
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                     <p class="text-sm text-gray-600">
                         <span class="font-medium text-gray-700">ดูแลและพัฒนาโดย:</span><br>
-                    แผนกบริการและงานธุรกิจ กองบริการลูกค้า เขต 3 (ภาคใต้)
+                    แผนกบริการและงานธุรกิจ กองบริการลูกค้า
                     </p>
                     <p class="text-xs text-gray-400 mt-2">
                         &copy; <span id="footer-year"></span> การไฟฟ้าส่วนภูมิภาค. สงวนลิขสิทธิ์.
@@ -1237,6 +1242,7 @@
             startDateInput: document.getElementById('start-date-input'),
             endDateInput: document.getElementById('end-date-input'),
             monthInput: document.getElementById('month-input'),
+            analysisMonthInput: document.getElementById('analysis-month-input'),
             latitudeInput: document.getElementById('latitude-input'),
             longitudeInput: document.getElementById('longitude-input'),
 
@@ -1570,7 +1576,7 @@
             const transformerUrlValid = validateGoogleSheetUrl(elements.transformerUrl.value.trim());
             const meterUrlValid = validateGoogleSheetUrl(elements.meterUrl.value.trim());
             const hasUrls = transformerUrlValid && meterUrlValid;
-            const hasParams = elements.authorityInput.value.trim() && elements.startDateInput.value && elements.endDateInput.value && elements.monthInput.value;
+            const hasParams = elements.authorityInput.value.trim() && elements.startDateInput.value && elements.endDateInput.value && elements.monthInput.value && elements.analysisMonthInput.value;
             const hasMappings = transformerMeterMappings.length > 0;
 
             elements.calculateBtn.disabled = !(hasUrls && hasParams && hasMappings);
@@ -1594,15 +1600,17 @@
 
                 const startDate = parseDate(elements.startDateInput.value);
                 const endDate = parseDate(elements.endDateInput.value);
-                const selectedMonthStr = elements.monthInput.value;
+                const meterMonthStr = elements.monthInput.value;
+                const analysisMonthStr = elements.analysisMonthInput.value;
                 const authorityName = elements.authorityInput.value.trim();
                 const latitude = parseFloat(elements.latitudeInput.value) || null;
                 const longitude = parseFloat(elements.longitudeInput.value) || null;
 
                 if (!startDate || !endDate) throw new Error('รูปแบบวันที่ไม่ถูกต้อง');
                 if (startDate > endDate) throw new Error('วันที่เริ่มต้นต้องมาก่อนวันที่สิ้นสุด');
+                if (!analysisMonthStr) throw new Error('กรุณาเลือกเดือนที่ทำการวิเคราะห์');
                 
-                const selectedMonth = new Date(selectedMonthStr + '-02T00:00:00Z').getUTCMonth();
+                const selectedMonth = new Date(meterMonthStr + '-02T00:00:00Z').getUTCMonth();
                 const monthKeys = ['KWH_JAN', 'KWH_FEB', 'KWH_MAR', 'KWH_APR', 'KWH_MAY', 'KWH_JUN', 'KWH_JUL', 'KWH_AUG', 'KWH_SEP', 'KWH_OCT', 'KWH_NOV', 'KWH_DEC'];
 
                 const results = [];
@@ -1631,7 +1639,6 @@
 
                 const keyMetrics = calculateKeyMetrics(transformerData, startDate, endDate);
                 
-                // ++ NEW: Generate Detailed Data Summary for AI analysis ++
                 const tDateKey = findKey(transformerData[0], ['Date', 'วันที่']);
                 const tEnergyKey = findKey(transformerData[0], ['Energy_Output_kWh', 'KWH_TOT']);
                 const tPowerKey = findKey(transformerData[0], ['P_TOT']);
@@ -1685,11 +1692,11 @@
                     longitude: longitude,
                     transformer_url: elements.transformerUrl.value.trim(),
                     meter_url: elements.meterUrl.value.trim(),
-                    dataSummary: dataSummary, // ++ NEW: Add detailed summary to the payload
+                    dataSummary: dataSummary,
                     lastUpdated: new Date().toISOString()
                 };
                 
-                const docId = `${authorityName}_${transformerMeterMappings.map(m => m.transformerId).join('_')}_${selectedMonthStr}`;
+                const docId = `${authorityName}_${transformerMeterMappings.map(m => m.transformerId).join('_')}_${analysisMonthStr}`;
                 const { error } = await supabase.from('analysis').upsert({ doc_id: docId, data: dataToSave }, { onConflict: 'doc_id' });
                 if (error) throw error;
                 
@@ -1771,7 +1778,7 @@
         }
         
         // --- DISPLAY FUNCTIONS ---
-        async function displayResults(currentMonthData, historicalData) { // ++ MODIFIED ++: Added historicalData parameter
+        async function displayResults(currentMonthData, historicalData) {
             hideElement(elements.actionPlanSection);
             hideElement(elements.actionButtonsContainer);
             
@@ -1784,9 +1791,9 @@
 
             updateKeyMetrics(currentMonthData);
             updateResultsTable(currentMonthData);
-            renderCharts(currentMonthData, historicalData); // ++ MODIFIED ++: Pass historicalData
+            renderCharts(currentMonthData, historicalData);
             renderTransformerMap(currentMonthData);
-            await getAiAnalysis(currentMonthData.results, avgLossPercent, currentMonthData.dataSummary, historicalData); // ++ MODIFIED ++: Pass both summaries
+            await getAiAnalysis(currentMonthData.results, avgLossPercent, currentMonthData.dataSummary, historicalData);
             await checkAndDisplayFeedback();
         }
 
@@ -1858,10 +1865,10 @@
         }
 
         // --- CHART FUNCTIONS ---
-        function renderCharts(currentMonthData, historicalData) { // ++ MODIFIED ++
+        function renderCharts(currentMonthData, historicalData) {
             renderTrendChart(currentMonthData);
-            renderMeterChart(historicalData); // ++ MODIFIED ++: Now uses aggregated historical data
-            renderSuspiciousMeterChart(historicalData); // ++ MODIFIED ++
+            renderMeterChart(historicalData);
+            renderSuspiciousMeterChart(historicalData);
         }
 
         function renderHighestLossChart(allData) {
@@ -1987,7 +1994,6 @@
             charts.trend.render();
         }
         
-        // ++ MODIFIED: This chart now uses aggregated historical data for a more accurate view
         function renderMeterChart(historicalData) {
             if (charts.meter) charts.meter.destroy();
 
@@ -2033,7 +2039,6 @@
             charts.meter.render();
         }
 
-        // ++ MODIFIED: This chart also uses aggregated historical data
         function renderSuspiciousMeterChart(historicalData) {
             if (charts.suspiciousMeter) charts.suspiciousMeter.destroy();
 
@@ -2073,7 +2078,6 @@
             charts.suspiciousMeter.render();
         }
 
-        // *** NEW: Map Rendering Function (Google Maps) ***
         function renderTransformerMap(data) {
             const lat = data.latitude;
             const lon = data.longitude;
@@ -2089,14 +2093,14 @@
                     mapInstance = new google.maps.Map(elements.transformerMapContainer, {
                         center: position,
                         zoom: 16,
-                        mapId: 'TRANSFORMER_LOSS_MAP' // Optional: for cloud-based styling
+                        mapId: 'TRANSFORMER_LOSS_MAP'
                     });
                 } else {
                     mapInstance.setCenter(position);
                 }
 
                 if (mapMarker) {
-                    mapMarker.setMap(null); // Remove previous marker
+                    mapMarker.setMap(null);
                 }
 
                 mapMarker = new google.maps.Marker({
@@ -2116,7 +2120,6 @@
                     });
                 });
                 
-                // Open it by default
                 infoWindow.open({ anchor: mapMarker, map: mapInstance });
 
             } else {
@@ -2127,7 +2130,7 @@
 
         // --- AI ANALYSIS & ACTION PLAN (GEMINI API) ---
         async function callGeminiAPI(prompt) {
-            const apiKey = "AIzaSyDwU3rcd0Lr5hS9BsBPcIXitu5YL-IEONQ"; // ใช้ Key ของคุณ
+            const apiKey = "AIzaSyDwU3rcd0Lr5hS9BsBPcIXitu5YL-IEONQ";
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${apiKey}`;
             const response = await fetch(apiUrl, {
                 method: 'POST',
@@ -2148,7 +2151,6 @@
             throw new Error("ไม่ได้รับผลลัพธ์ที่ถูกต้องจาก AI");
         }
 
-        // ++ MODIFIED: Major upgrade to the AI analysis function and prompt
         async function getAiAnalysis(results, avgLossPercent, dataSummary, historicalData) {
             showElement(elements.aiLoader);
             hideElement(elements.aiContent);
@@ -2299,7 +2301,6 @@ ${currentAnalysisText}
             });
         }
         
-        // ++ NEW: Helper function to aggregate historical data for the selected group
         function getHistoricalDataForGroup(auth, trans) {
             const groupData = allAnalysisData[auth]?.[trans] || {};
             const aggregatedData = {
@@ -2327,7 +2328,6 @@ ${currentAnalysisText}
             return aggregatedData;
         }
 
-        // ++ MODIFIED: Now fetches and passes historical data
         async function loadSelectedData() {
             const auth = elements.viewAuthoritySelect.value;
             const trans = elements.viewTransformerSelect.value;
@@ -2339,8 +2339,8 @@ ${currentAnalysisText}
                 hideElement(elements.userSelectionPrompt);
                 showElement(elements.resultsSection);
                 const currentMonthData = allAnalysisData[auth][trans][month];
-                const historicalData = getHistoricalDataForGroup(auth, trans); // Get all historical data for this group
-                await displayResults(currentMonthData, historicalData); // Pass both to the display function
+                const historicalData = getHistoricalDataForGroup(auth, trans);
+                await displayResults(currentMonthData, historicalData);
             } else {
                  hideElement(elements.resultsSection);
                  showElement(elements.userSelectionPrompt);
@@ -2597,7 +2597,7 @@ ${adminSuggestions || "ไม่มี"}
                 }
             });
 
-            [elements.transformerUrl, elements.meterUrl, elements.authorityInput, elements.startDateInput, elements.endDateInput, elements.monthInput].forEach(input => {
+            [elements.transformerUrl, elements.meterUrl, elements.authorityInput, elements.startDateInput, elements.endDateInput, elements.monthInput, elements.analysisMonthInput].forEach(input => {
                 input?.addEventListener('input', validateInputs);
             });
 
@@ -2655,7 +2655,6 @@ ${adminSuggestions || "ไม่มี"}
         }
         
         function setupSelectorListeners(allData) {
-            // ++ MODIFIED ++: This entire function is enhanced for auto-population
             function clearInputFieldsAndTriggerUpdate() {
                 const fieldsToClear = [elements.transformerUrl, elements.meterUrl, elements.latitudeInput, elements.longitudeInput, elements.authorityInput];
                 fieldsToClear.forEach(field => {
@@ -2669,7 +2668,7 @@ ${adminSuggestions || "ไม่มี"}
             elements.viewAuthoritySelect.addEventListener('change', (e) => {
                 populateTransformerSelector(allData, e.target.value);
                 elements.viewMonthSelect.innerHTML = '<option value="">-- เลือกเดือน --</option>'; 
-                clearInputFieldsAndTriggerUpdate(); // ++ ADDED ++: Clear inputs when authority changes
+                clearInputFieldsAndTriggerUpdate();
                 loadSelectedData();
             });
 
@@ -2678,22 +2677,19 @@ ${adminSuggestions || "ไม่มี"}
                 const trans = e.target.value;
                 populateMonthSelector(allData, auth, trans);
                 
-                // ++ ADDED ++: Auto-population logic
                 if (auth && trans && allData[auth]?.[trans]) {
                     const months = Object.keys(allData[auth][trans]).sort();
-                    const latestMonth = months.pop(); // Get the most recent entry
+                    const latestMonth = months.pop();
                     
                     if(latestMonth) {
                         const latestData = allData[auth][trans][latestMonth];
                         
-                        // Populate Admin Input fields
                         elements.authorityInput.value = latestData.authority || auth;
                         elements.transformerUrl.value = latestData.transformer_url || '';
                         elements.meterUrl.value = latestData.meter_url || '';
                         elements.latitudeInput.value = latestData.latitude || '';
                         elements.longitudeInput.value = latestData.longitude || '';
                         
-                        // Trigger input events to update UI state (like button disability)
                         [elements.authorityInput, elements.transformerUrl, elements.meterUrl].forEach(el => {
                             el.dispatchEvent(new Event('input', { bubbles: true }));
                         });
@@ -2749,14 +2745,9 @@ ${adminSuggestions || "ไม่มี"}
             thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
             elements.startDateInput.valueAsDate = thirtyDaysAgo;
             elements.monthInput.value = new Date().toISOString().slice(0, 7);
+            elements.analysisMonthInput.value = new Date().toISOString().slice(0, 7);
             
-            // ========== ADD THIS LINE ==========
             document.getElementById('footer-year').textContent = new Date().getFullYear();
-            // ===================================
-                
-            await fetchAndProcessInitialData();
-            
-            supabase.channel('public-changes')
                 
             await fetchAndProcessInitialData();
             
