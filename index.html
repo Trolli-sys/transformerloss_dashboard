@@ -11,8 +11,9 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
-    <!-- [MODIFIED] Google Maps API Script (เปิดใช้งาน visualization library) -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC-bqu1W2KS1GHq6uig66gcn-s0qcXNqHs&libraries=visualization"></script>
+    <!-- ADD Google Maps API Script -->
+    <!-- !!! IMPORTANT: Replace YOUR_API_KEY_HERE with your actual Google Maps API Key !!! -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC-bqu1W2KS1GHq6uig66gcn-s0qcXNqHs"></script>
     
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -535,6 +536,7 @@
 
     <!-- Main Application -->
     <div id="app-container" class="min-h-screen">
+        <!-- Header -->
         <header class="bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-30">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between items-center h-16">
@@ -572,6 +574,7 @@
         </header>
 
         <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+            <!-- Admin Panel (with Tabs) -->
             <section id="admin-panel" class="admin-only hidden fade-in">
                 <div class="glass-card p-8">
                     <!-- Admin Tabs Navigation -->
@@ -796,29 +799,35 @@
                         ภาพรวมข้อมูลทั้งหมด (ล่าสุด)
                     </h2>
                     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                        <!-- Card 1: Total Transformers -->
                         <div class="p-4 bg-blue-50 rounded-xl border border-blue-200 text-center">
                             <div class="metric-label text-blue-800">หม้อแปลงที่วิเคราะห์</div>
                             <div class="text-3xl font-bold text-blue-600 mt-1" id="summary-total-transformers">0</div>
                         </div>
+                        <!-- Card 2: Total Meters -->
                         <div class="p-4 bg-green-50 rounded-xl border border-green-200 text-center">
                             <div class="metric-label text-green-800">มิเตอร์ที่เชื่อมต่อ</div>
                             <div class="text-3xl font-bold text-green-600 mt-1" id="summary-total-meters">0</div>
                         </div>
+                        <!-- Card 3: Total Energy Out -->
                         <div class="p-4 bg-indigo-50 rounded-xl border border-indigo-200 text-center">
                             <div class="metric-label text-indigo-800">รวมพลังงานจ่ายออก</div>
                             <div class="text-3xl font-bold text-indigo-600 mt-1" id="summary-energy-out">0</div>
                             <div class="text-xs text-gray-500">kWh</div>
                         </div>
+                        <!-- Card 4: Total Energy In -->
                         <div class="p-4 bg-purple-50 rounded-xl border border-purple-200 text-center">
                             <div class="metric-label text-purple-800">รวมพลังงานรับเข้า</div>
                             <div class="text-3xl font-bold text-purple-600 mt-1" id="summary-energy-in">0</div>
                             <div class="text-xs text-gray-500">kWh</div>
                         </div>
+                        <!-- Card 5: Total Loss -->
                         <div class="p-4 bg-red-50 rounded-xl border border-red-200 text-center">
                             <div class="metric-label text-red-800">รวมค่า Loss</div>
                             <div class="text-3xl font-bold text-red-600 mt-1" id="summary-total-loss">0</div>
                             <div class="text-xs text-gray-500">kWh</div>
                         </div>
+                        <!-- Card 6: Overall Loss % -->
                         <div class="p-4 bg-orange-50 rounded-xl border border-orange-200 text-center">
                             <div class="metric-label text-orange-800">ภาพรวม Loss</div>
                             <div class="text-3xl font-bold text-orange-600 mt-1" id="summary-loss-percent">0%</div>
@@ -827,112 +836,313 @@
                 </div>
             </section>
             
-            <!-- [DEPRECATED] This section is now hidden by default -->
+            <!-- Highest Loss Chart Section -->
             <section id="highest-loss-section" class="hidden fade-in">
                 <div class="glass-card p-6 mb-8">
                     <div id="highest-loss-chart"></div>
                 </div>
             </section>
 
-            <!-- [NEW] Mission Control Dashboard Section -->
-            <section id="mission-control-section" class="hidden fade-in space-y-8">
-                <!-- PART 1: EXECUTIVE OVERVIEW -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <!-- GEOGRAPHIC HEATMAP -->
-                    <div class="glass-card p-6">
-                        <h2 class="text-xl font-bold text-gray-900 flex items-center mb-2">
-                            <svg class="w-6 h-6 text-red-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                            ภาพรวมสถานการณ์เชิงพื้นที่
-                        </h2>
-                        <div id="mission-heatmap-container" style="height: 400px;" class="rounded-lg bg-gray-100 w-full border"></div>
-                    </div>
-                    <!-- PERFORMANCE LEADERBOARD -->
-                    <div class="glass-card p-6">
-                        <h2 class="text-xl font-bold text-gray-900 flex items-center mb-2">
-                            <svg class="w-6 h-6 text-amber-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 6l12-3"></path></svg>
-                            ตารางจัดอันดับประสิทธิภาพ
-                        </h2>
-                        <div id="mission-leaderboard-container" class="space-y-3 max-h-[400px] overflow-y-auto pr-2"></div>
-                    </div>
-                </div>
-                <!-- PART 2 & 3: COMMAND CENTER & TECHNICIAN BRIEFING -->
-                <div class="glass-card p-6">
-                    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                        <!-- MISSION CARDS -->
-                        <div class="lg:col-span-1">
-                            <h3 class="font-semibold text-gray-700 mb-3">กลุ่มหม้อแปลง</h3>
-                            <div class="space-y-3" id="mission-cards-container"></div>
-                        </div>
-                        <!-- TARGETS LIST -->
-                        <div class="lg:col-span-1 bg-slate-50 rounded-xl p-4 border border-slate-200">
-                            <h3 class="font-semibold text-gray-700 mb-1">หม้อแปลงเป้าหมาย</h3>
-                            <p class="text-xs text-gray-500 mb-3" id="mission-targets-header">เลือกภารกิจเพื่อดูเป้าหมาย</p>
-                            <div id="mission-targets-container" class="space-y-2 pr-2 max-h-[350px] overflow-y-auto"></div>
-                        </div>
-                        <!-- TECHNICIAN BRIEFING CARD -->
-                        <div class="lg:col-span-2 bg-white rounded-xl p-6 border-2 border-slate-200">
-                            <div id="briefing-placeholder" class="flex flex-col items-center justify-center h-full text-center">
-                                <svg class="w-16 h-16 text-slate-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                                <h4 class="font-semibold text-slate-600">แฟ้มข้อมูลสรุป (Briefing Card)</h4>
-                                <p class="text-sm text-slate-500">เลือกหม้อแปลงเป้าหมายเพื่อดูข้อมูล</p>
-                            </div>
-                            <div id="briefing-content" class="hidden">
-                                 <div class="flex justify-between items-start mb-4">
-                                    <div>
-                                        <h2 id="briefing-title" class="text-2xl font-bold text-gray-900"></h2>
-                                        <p id="briefing-subtitle" class="text-gray-500"></p>
-                                    </div>
-                                    <div id="briefing-loss-badge" class="px-3 py-1.5 rounded-full font-bold text-lg text-center"></div>
-                                </div>
-                                <div id="briefing-daily-chart-container" class="mt-4 p-2 bg-slate-50 rounded-lg">
-                                    <h5 class="text-xs font-semibold text-gray-600">พฤติกรรมการใช้พลังงาน (รายวัน)</h5>
-                                    <div id="briefing-daily-chart" style="height: 100px;"></div>
-                                </div>
-                                 <div class="mt-4 grid grid-cols-2 gap-4">
-                                    <div id="briefing-meters-container">
-                                        <h5 class="text-sm font-semibold text-gray-600 mb-2">มิเตอร์ที่เกี่ยวข้อง:</h5>
-                                        <ul id="briefing-meters-list" class="text-xs space-y-1 max-h-24 overflow-y-auto"></ul>
-                                    </div>
-                                    <div>
-                                        <h5 class="text-sm font-semibold text-gray-600 mb-2">ข้อมูลทางเทคนิค:</h5>
-                                        <ul class="text-xs space-y-1">
-                                            <li id="briefing-pf"></li>
-                                            <li id="briefing-peak"></li>
-                                        </ul>
-                                         <a id="briefing-nav-btn" href="#" target="_blank" class="hidden mt-3 btn-secondary text-sm w-full justify-center">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                                            <span>นำทาง</span>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
+            <!-- Filter Controls -->
             <div class="glass-card p-6 mb-8">
                 <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
                     <h2 class="text-2xl font-bold text-gray-900 flex items-center">
                         <svg class="w-6 h-6 text-blue-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                         </svg>
-                        ผลการวิเคราะห์ค่า Loss (ฉบับเต็ม)
+                        ผลการวิเคราะห์ค่า Loss
                     </h2>
+
                     <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
-                        <select id="view-authority-select" class="input-field"></select>
-                        <select id="view-transformer-select" class="input-field"></select>
-                        <select id="view-month-select" class="input-field"></select>
+                        <select id="view-authority-select" class="input-field">
+                            <option value="">-- เลือกการไฟฟ้า --</option>
+                        </select>
+                        <select id="view-transformer-select" class="input-field">
+                            <option value="">-- เลือกกลุ่มหม้อแปลง --</option>
+                        </select>
+                        <select id="view-month-select" class="input-field">
+                            <option value="">-- เลือกเดือน --</option>
+                        </select>
                     </div>
                 </div>
             </div>
 
+            <!-- Results Section -->
             <section id="results-section" class="hidden fade-in">
-                 <!-- (Results section content unchanged) -->
+                <!-- Admin Feedback Section for User -->
+                <div id="user-view-report-feedback-section" class="hidden glass-card p-6 mb-8">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-6 h-6 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+                        ข้อเสนอแนะจากผู้ดูแลระบบ
+                    </h3>
+                    <div id="user-view-feedback-content" class="prose max-w-none bg-green-50 border-l-4 border-green-400 p-4 rounded-r-lg text-green-800">
+                        <!-- Feedback content will be loaded here -->
+                    </div>
+                </div>
+
+
+                <!-- KPI Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="metric-card">
+                        <div class="metric-label">พลังงานจ่ายออก</div>
+                        <div class="metric-value text-blue-600" id="kpi-transformer-energy">0</div>
+                        <div class="text-sm text-gray-500 mt-1">kWh</div>
+                        <div class="absolute top-4 right-4">
+                            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-label">พลังงานรับเข้า</div>
+                        <div class="metric-value text-green-600" id="kpi-meter-energy">0</div>
+                        <div class="text-sm text-gray-500 mt-1">kWh</div>
+                        <div class="absolute top-4 right-4">
+                            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-label">ค่า Loss</div>
+                        <div class="metric-value text-red-600" id="kpi-loss">0</div>
+                        <div class="text-sm text-gray-500 mt-1">kWh</div>
+                        <div class="absolute top-4 right-4">
+                            <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                                <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-label">เปอร์เซ็นต์ Loss</div>
+                        <div class="metric-value text-orange-600" id="kpi-loss-percent">0%</div>
+                        <div class="text-sm text-gray-500 mt-1">ของพลังงานรวม</div>
+                        <div class="absolute top-4 right-4">
+                            <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                                <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                    <!-- Trend Chart -->
+                    <div class="lg:col-span-2">
+                        <div class="chart-container">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-lg font-bold text-gray-800">แนวโน้มการใช้พลังงานรายเดือน</h3>
+                                <div class="flex space-x-2">
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        <span class="w-2 h-2 bg-blue-500 rounded-full mr-1"></span>
+                                        หม้อแปลง
+                                    </span>
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        <span class="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
+                                        มิเตอร์
+                                    </span>
+                                </div>
+                            </div>
+                            <div id="consumption-trend-chart"></div>
+                        </div>
+                    </div>
+
+                    <!-- Key Metrics -->
+                    <div class="chart-container">
+                        <h3 class="text-lg font-bold text-gray-800 mb-6">ตัวชี้วัดสำคัญ</h3>
+                        <div class="space-y-6">
+                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                <div>
+                                    <div class="metric-label">Power Factor เฉลี่ย</div>
+                                    <div class="text-2xl font-bold" id="metric-pf">0.00</div>
+                                </div>
+                                <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                <div>
+                                    <div class="metric-label">ความต้องการสูงสุด</div>
+                                    <div class="text-2xl font-bold text-gray-800" id="metric-peak-power">0 kW</div>
+                                </div>
+                                <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                <div>
+                                    <div class="metric-label">วันที่เกิด Peak</div>
+                                    <div class="text-lg text-gray-600" id="metric-peak-date">-</div>
+                                </div>
+                                <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Charts Row -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                    <!-- Meter Consumption Chart with Tabs -->
+                    <div class="chart-container">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 id="meter-chart-title" class="text-lg font-bold text-gray-800">10 อันดับมิเตอร์ที่ใช้พลังงานสะสมสูงสุด</h3>
+                            <div class="bg-gray-100 p-1 rounded-lg flex space-x-1">
+                                <button id="top-meters-tab" class="meter-tab active">10 อันดับสูงสุด</button>
+                                <button id="suspicious-meters-tab" class="meter-tab">น่าสงสัย</button>
+                            </div>
+                        </div>
+                        <p id="meter-chart-subtitle" class="text-sm text-gray-500 -mt-2 mb-4">ข้อมูลสะสมจากทุกเดือนที่บันทึกไว้</p>
+                        
+                        <div id="top-meters-content">
+                            <div id="meter-consumption-chart"></div>
+                        </div>
+                        <div id="suspicious-meters-content" class="hidden">
+                            <div id="suspicious-meter-chart"></div>
+                            <p id="no-suspicious-meters" class="text-center text-gray-500 py-8 hidden">ไม่พบมิเตอร์ที่น่าสงสัย</p>
+                        </div>
+                    </div>
+
+                    <!-- AI Analysis -->
+                    <div class="chart-container">
+                        <div class="flex justify-between items-start">
+                             <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                                <svg class="w-5 h-5 text-purple-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                                </svg>
+                                บทวิเคราะห์ AI
+                            </h3>
+                        </div>
+
+                        <div id="ai-analysis-loader" class="flex flex-col items-center justify-center h-64">
+                            <div class="ai-spinner mb-4"></div>
+                            <p class="text-gray-500 text-center">กำลังวิเคราะห์ข้อมูลด้วย AI...</p>
+                        </div>
+
+                        <div id="ai-analysis-content" class="prose max-w-none text-gray-600 hidden"></div>
+                        
+                        <div id="action-buttons-container" class="mt-4 space-y-2 hidden">
+                            <button id="generate-action-plan-btn" class="btn-primary w-full">✨ สร้างแผนปฏิบัติการ</button>
+                            <button id="show-edit-report-modal-btn" class="btn-secondary w-full">📝 บันทึกการแก้ไขตามบทวิเคราะห์</button>
+                        </div>
+
+                        <div id="ai-analysis-error" class="hidden">
+                            <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                                <div class="flex">
+                                    <svg class="w-5 h-5 text-red-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    <div class="ml-3">
+                                        <p class="text-sm text-red-700" id="ai-error-text"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Plan Section -->
+                        <div id="action-plan-section" class="mt-6 hidden">
+                            <h4 class="text-md font-bold text-gray-800 mb-4 flex items-center">
+                                <svg class="w-5 h-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                                </svg>
+                                แผนปฏิบัติการ (Action Plan)
+                            </h4>
+                            <div id="action-plan-loader" class="flex flex-col items-center justify-center h-40 hidden">
+                                <div class="ai-spinner mb-4"></div>
+                                <p class="text-gray-500 text-center">กำลังสร้างแผนปฏิบัติการ...</p>
+                            </div>
+                            <div id="action-plan-content" class="prose max-w-none text-gray-600 hidden p-4 bg-gray-50 rounded-lg border"></div>
+                            <div id="action-plan-error" class="hidden">
+                                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                                    <p class="text-sm text-red-700" id="action-plan-error-text"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- *** NEW: Map Row *** -->
+                <div class="grid grid-cols-1 gap-8 mb-8">
+                    <div class="chart-container">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                            <svg class="w-5 h-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            แผนผังที่ตั้งหม้อแปลง
+                        </h3>
+                        <div id="transformer-map" style="height: 400px;" class="rounded-lg bg-gray-100"></div>
+                        <p id="map-no-data" class="text-center text-gray-500 py-16 hidden">ไม่มีข้อมูลพิกัดสำหรับหม้อแปลงนี้</p>
+                    </div>
+                </div>
+
+                <!-- Detailed Table (Admin Only) -->
+                <div id="detailed-table-card" class="admin-only hidden">
+                    <div class="glass-card p-8">
+                        <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
+                            <svg class="w-6 h-6 text-gray-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"></path>
+                            </svg>
+                            ตารางข้อมูลโดยละเอียด
+                        </h3>
+
+                        <div class="overflow-x-auto">
+                            <table class="data-table w-full">
+                                <thead>
+                                    <tr>
+                                        <th>ID หม้อแปลง</th>
+                                        <th>พลังงานจ่ายออก (kWh)</th>
+                                        <th>พลังงานรับเข้ารวม (kWh)</th>
+                                        <th>ค่า Loss (kWh)</th>
+                                        <th>ค่า Loss (%)</th>
+                                        <th>สถานะ</th>
+                                        <th>มิเตอร์ที่เชื่อมต่อ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="results-table">
+                                    <!-- Table rows will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </section>
 
+            <!-- User Waiting Message -->
             <div id="user-waiting-message" class="glass-card p-12 text-center">
-                 <!-- (Waiting message content unchanged) -->
+                <div class="max-w-md mx-auto">
+                    <div class="w-24 h-24 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <svg class="w-12 h-12 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-3">รอการอัปเดตข้อมูล</h3>
+                    <p class="text-gray-600 mb-6">ยังไม่มีข้อมูลการวิเคราะห์ กรุณารอให้ผู้ดูแลระบบทำการประมวลผลข้อมูล</p>
+                    <div class="inline-flex items-center px-4 py-2 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        กำลังรอข้อมูล
+                    </div>
+                </div>
             </div>
         </main>
     </div>
@@ -943,8 +1153,8 @@
         // --- GLOBAL STATE ---
         let currentUser = { role: 'user' };
         let charts = { trend: null, meter: null, highestLoss: null, suspiciousMeter: null };
-        let mapInstance = null;
-        let mapMarker = null;
+        let mapInstance = null; // For Google Map
+        let mapMarker = null; // For Google Map Marker
         let analysisDone = false;
         let transformerMeterMappings = [];
         let currentAnalysisText = '';
@@ -952,31 +1162,31 @@
         let allAnalysisData = {};
         let currentReportId = null;
         let currentReportAiAnalysisText = '';
-        // --- NEW: MISSION CONTROL STATE ---
-        let missionData = [];
-        let briefingChart = null;
-        let missionHeatmap;
 
         // --- SUPABASE CONFIG ---
         const SUPABASE_URL = 'https://cqfpctbyosfrpipcntik.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxZnBjdGJ5b3NmcnBpcGNudGlrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM3NTcwODYsImV4cCI6MjA2OTMzMzA4Nn0.3fR9jkM2E0AEs7Kddj5mwpd9ySF1Z8nTp6MiCVCWD6Y';
 
 
-        // --- [RESTORED] DOM ELEMENTS ---
+        // --- DOM ELEMENTS ---
         const elements = {
+            // Modal elements
             loginModalOverlay: document.getElementById('login-modal-overlay'),
             closeModalBtn: document.getElementById('close-modal-btn'),
             loginForm: document.getElementById('login-form'),
             loginError: document.getElementById('login-error'),
+            
             confirmModalOverlay: document.getElementById('confirm-modal-overlay'),
             confirmModalTitle: document.getElementById('confirm-modal-title'),
             confirmModalText: document.getElementById('confirm-modal-text'),
             confirmModalCancelBtn: document.getElementById('confirm-modal-cancel-btn'),
             confirmModalConfirmBtn: document.getElementById('confirm-modal-confirm-btn'),
+
             editReportModalOverlay: document.getElementById('edit-report-modal-overlay'),
             editReportForm: document.getElementById('edit-report-form'),
             closeEditReportModalBtn: document.getElementById('close-edit-report-modal-btn'),
             showEditReportModalBtn: document.getElementById('show-edit-report-modal-btn'),
+
             reportDetailsModalOverlay: document.getElementById('report-details-modal-overlay'),
             closeReportDetailsModalBtn: document.getElementById('close-report-details-modal-btn'),
             detailsReporterName: document.getElementById('details-reporter-name'),
@@ -992,9 +1202,13 @@
             reportAiAnalysisContent: document.getElementById('report-ai-analysis-content'),
             deleteReportBtn: document.getElementById('delete-report-btn'),
             useAiAnalysisAsSuggestionBtn: document.getElementById('use-ai-analysis-as-suggestion-btn'),
+
+            // Auth elements
             adminLoginBtn: document.getElementById('admin-login-btn'),
             logoutBtn: document.getElementById('logout-btn'),
             userRoleDisplay: document.getElementById('user-role-display'),
+
+            // Admin Panel & Tabs
             adminPanel: document.getElementById('admin-panel'),
             adminConfigTab: document.getElementById('admin-config-tab'),
             adminReportsTab: document.getElementById('admin-reports-tab'),
@@ -1003,6 +1217,8 @@
             reportsListContainer: document.getElementById('reports-list-container'),
             reportsTableBody: document.getElementById('reports-table-body'),
             noReportsMessage: document.getElementById('no-reports-message'),
+
+            // Input elements
             transformerUrl: document.getElementById('transformer-url'),
             meterUrl: document.getElementById('meter-url'),
             authorityInput: document.getElementById('authority-input'),
@@ -1011,11 +1227,15 @@
             monthInput: document.getElementById('month-input'),
             latitudeInput: document.getElementById('latitude-input'),
             longitudeInput: document.getElementById('longitude-input'),
+
+            // Control elements
             calculateBtn: document.getElementById('calculate-btn'),
             deleteBtn: document.getElementById('delete-btn'),
             loadingSpinner: document.getElementById('loading-spinner'),
             errorMessage: document.getElementById('error-message'),
             errorText: document.getElementById('error-text'),
+
+            // View elements
             resultsSection: document.getElementById('results-section'),
             userWaitingMessage: document.getElementById('user-waiting-message'),
             userSelectionPrompt: document.getElementById('user-selection-prompt'),
@@ -1031,6 +1251,8 @@
             summaryEnergyIn: document.getElementById('summary-energy-in'),
             summaryTotalLoss: document.getElementById('summary-total-loss'),
             summaryLossPercent: document.getElementById('summary-loss-percent'),
+
+            // Chart elements
             trendChart: document.getElementById('consumption-trend-chart'),
             meterChart: document.getElementById('meter-consumption-chart'),
             suspiciousMeterChart: document.getElementById('suspicious-meter-chart'),
@@ -1045,35 +1267,54 @@
             suspiciousMetersTab: document.getElementById('suspicious-meters-tab'),
             topMetersContent: document.getElementById('top-meters-content'),
             suspiciousMetersContent: document.getElementById('suspicious-meters-content'),
+
+            // KPI elements
             kpiTransformerEnergy: document.getElementById('kpi-transformer-energy'),
             kpiMeterEnergy: document.getElementById('kpi-meter-energy'),
             kpiLoss: document.getElementById('kpi-loss'),
             kpiLossPercent: document.getElementById('kpi-loss-percent'),
+
+            // Metrics elements
             metricPf: document.getElementById('metric-pf'),
             metricPeakPower: document.getElementById('metric-peak-power'),
             metricPeakDate: document.getElementById('metric-peak-date'),
+
+            // AI Analysis elements
             aiLoader: document.getElementById('ai-analysis-loader'),
             aiContent: document.getElementById('ai-analysis-content'),
             aiError: document.getElementById('ai-analysis-error'),
             aiErrorText: document.getElementById('ai-error-text'),
             actionButtonsContainer: document.getElementById('action-buttons-container'),
             generateActionPlanBtn: document.getElementById('generate-action-plan-btn'),
+            
+            // Action Plan elements
             actionPlanSection: document.getElementById('action-plan-section'),
             actionPlanLoader: document.getElementById('action-plan-loader'),
             actionPlanContent: document.getElementById('action-plan-content'),
             actionPlanError: document.getElementById('action-plan-error'),
             actionPlanErrorText: document.getElementById('action-plan-error-text'),
+
+            // Table elements
             resultsTable: document.getElementById('results-table')
         };
-        
-        // --- [RESTORED] UTILITY & MODAL FUNCTIONS ---
+
+        // --- UTILITY FUNCTIONS ---
         function showElement(element) { if (element) element.classList.remove('hidden'); }
         function hideElement(element) { if (element) element.classList.add('hidden'); }
         function toggleElement(element, show) { show ? showElement(element) : hideElement(element); }
+
         function showToast(message, isError = false) {
             const toastDiv = document.createElement('div');
             toastDiv.className = `fixed top-4 right-4 text-white px-6 py-3 rounded-lg shadow-lg z-[100] transition-all duration-300 transform translate-x-full ${isError ? 'bg-red-500' : 'bg-green-500'}`;
-            toastDiv.innerHTML = `<div class="flex items-center space-x-3"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">${isError ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>' : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>'}</svg><span>${message}</span></div>`;
+            toastDiv.innerHTML = `
+                <div class="flex items-center space-x-3">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        ${isError 
+                            ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>'
+                            : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>'}
+                    </svg>
+                    <span>${message}</span>
+                </div>`;
             document.body.appendChild(toastDiv);
             setTimeout(() => toastDiv.classList.remove('translate-x-full'), 100);
             setTimeout(() => {
@@ -1083,91 +1324,486 @@
         }
         function showError(message) { showToast(message, true); }
         function showSuccess(message) { showToast(message, false); }
-        function showModal(overlayId) { const o = document.getElementById(overlayId); if(o) o.classList.add('show'); }
-        function hideModal(overlayId) { const o = document.getElementById(overlayId); if(o) o.classList.remove('show'); }
+
+
+        // --- MODAL FUNCTIONS ---
+        function showModal(overlayId) {
+            const overlay = document.getElementById(overlayId);
+            if(overlay) {
+                overlay.classList.add('show');
+            }
+        }
+
+        function hideModal(overlayId) {
+            const overlay = document.getElementById(overlayId);
+            if(overlay) {
+                overlay.classList.remove('show');
+            }
+        }
+        
         function setupModal(overlayId, closeBtnId) {
             const overlay = document.getElementById(overlayId);
             const closeBtn = document.getElementById(closeBtnId);
-            if (overlay) overlay.addEventListener('click', (e) => { if (e.target === overlay) hideModal(overlayId); });
-            if (closeBtn) closeBtn.addEventListener('click', () => hideModal(overlayId));
+            if (overlay) {
+                overlay.addEventListener('click', (e) => {
+                    if (e.target === overlay) hideModal(overlayId);
+                });
+            }
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => hideModal(overlayId));
+            }
         }
-        async function showReportDetailsModal(report) { /* ... (function unchanged) ... */ }
-        function showConfirmModal({ title, text, onConfirm }) { /* ... (function unchanged) ... */ }
+
+        async function showReportDetailsModal(report) {
+            currentReportId = report.id;
+            elements.detailsReporterName.textContent = report.reporter_name;
+            elements.detailsReporterPosition.textContent = report.reporter_position;
+            elements.detailsReporterAffiliation.textContent = report.reporter_affiliation;
+            elements.detailsTransformerId.textContent = report.transformer_id;
+            elements.detailsAuthority.textContent = report.authority;
+            elements.detailsCreatedAt.textContent = new Date(report.created_at).toLocaleString('th-TH');
+            elements.detailsReportDetails.textContent = report.report_details;
+            elements.adminSuggestions.value = report.admin_suggestions || '';
+            elements.reportAiAnalysisContent.innerHTML = report.ai_report_analysis ? marked.parse(report.ai_report_analysis) : '<p class="text-gray-500">ยังไม่มีการวิเคราะห์รายงานนี้</p>';
+            
+            toggleElement(elements.useAiAnalysisAsSuggestionBtn, !!report.ai_report_analysis);
+            currentReportAiAnalysisText = report.ai_report_analysis || '';
+            
+            showModal('report-details-modal-overlay');
+        }
+
+        function showConfirmModal({ title, text, onConfirm }) {
+            elements.confirmModalTitle.textContent = title;
+            elements.confirmModalText.textContent = text;
+            
+            const confirmHandler = () => {
+                onConfirm();
+                hideModal('confirm-modal-overlay');
+            };
+            
+            elements.confirmModalConfirmBtn.addEventListener('click', confirmHandler, { once: true });
+            showModal('confirm-modal-overlay');
+        }
+
 
         // --- AUTH & DATA FUNCTIONS ---
         function renderAppForRole() {
             const isAdmin = currentUser.role === 'admin';
             elements.userRoleDisplay.textContent = isAdmin ? 'Administrator' : 'ผู้ใช้งาน';
+
             toggleElement(elements.adminLoginBtn, !isAdmin);
             toggleElement(elements.logoutBtn, isAdmin);
             toggleElement(elements.adminPanel, isAdmin);
-            document.querySelectorAll('.admin-only').forEach(el => toggleElement(el, isAdmin));
+
+            document.querySelectorAll('.admin-only').forEach(el =>
+                toggleElement(el, isAdmin)
+            );
+            
             toggleElement(elements.deleteBtn, isAdmin && analysisDone && elements.viewMonthSelect.value);
+
 
             if (analysisDone) {
                 showElement(elements.overallSummarySection);
-                hideElement(elements.highestLossSection);
-                showElement(document.getElementById('mission-control-section'));
+                showElement(elements.highestLossSection);
                 hideElement(elements.userWaitingMessage);
             } else {
                 hideElement(elements.overallSummarySection);
                 hideElement(elements.highestLossSection);
-                hideElement(document.getElementById('mission-control-section'));
                 showElement(elements.userWaitingMessage);
             }
         }
         
         async function fetchAndProcessInitialData() {
             const { data, error } = await supabase.from('analysis').select('*');
-            if (error) { console.error("Error fetching initial data:", error); showError("ไม่สามารถดึงข้อมูลเริ่มต้นได้"); return; }
-            allAnalysisData = {}; let hasData = false;
+            if (error) {
+                console.error("Error fetching initial data:", error);
+                showError("ไม่สามารถดึงข้อมูลเริ่มต้นได้");
+                return;
+            }
+
+            allAnalysisData = {};
+            let hasData = false;
             data.forEach(row => {
-                const a = row.data; if (!allAnalysisData[a.authority]) allAnalysisData[a.authority] = {};
-                const k = a.mappings.map(m => m.transformerId).join('_'); const m = row.doc_id.split('_').pop();
-                if (!allAnalysisData[a.authority][k]) allAnalysisData[a.authority][k] = {};
-                allAnalysisData[a.authority][k][m] = a; hasData = true;
+                const analysisData = row.data;
+                if (!allAnalysisData[analysisData.authority]) {
+                    allAnalysisData[analysisData.authority] = {};
+                }
+                const transformerKey = analysisData.mappings.map(m => m.transformerId).join('_');
+                const month = row.doc_id.split('_').pop();
+                 if (!allAnalysisData[analysisData.authority][transformerKey]) {
+                    allAnalysisData[analysisData.authority][transformerKey] = {};
+                }
+                allAnalysisData[analysisData.authority][transformerKey][month] = analysisData;
+                hasData = true;
             });
+            
             analysisDone = hasData;
             renderAppForRole();
             calculateAndDisplayOverallSummary(allAnalysisData);
-            setupSelectorListeners(allAnalysisData);
-            if (hasData) { populateSelectors(allAnalysisData); hideElement(elements.userWaitingMessage); showElement(elements.userSelectionPrompt); hideElement(elements.resultsSection); } 
-            else { populateSelectors({}); hideElement(elements.userSelectionPrompt); showElement(elements.userWaitingMessage); }
+            
+            setupSelectorListeners(allAnalysisData); 
+
+            if (hasData) {
+                populateSelectors(allAnalysisData);
+                hideElement(elements.userWaitingMessage);
+                showElement(elements.userSelectionPrompt);
+                hideElement(elements.resultsSection);
+            } else {
+                 populateSelectors({});
+                 hideElement(elements.userSelectionPrompt);
+                 showElement(elements.userWaitingMessage);
+            }
         }
 
         // --- DATA PROCESSING FUNCTIONS ---
-        function findKey(obj, possibleKeys) { /* ... (function unchanged) ... */ }
-        function parseDate(dateString) { /* ... (function unchanged) ... */ }
-        function transformGoogleSheetUrl(url) { /* ... (function unchanged) ... */ }
-        async function fetchDataFromGoogleSheet(url, keywords) { /* ... (function unchanged) ... */ }
-        
+        function findKey(obj, possibleKeys) {
+            if (!obj) return null;
+            const objKeys = Object.keys(obj);
+            for (const key of possibleKeys) {
+                const foundKey = objKeys.find(k => k.trim().toLowerCase() === key.toLowerCase());
+                if (foundKey) return foundKey;
+            }
+            return null;
+        }
+
+        function parseDate(dateString) {
+            if (!dateString || typeof dateString !== 'string') return null;
+            const trimmedDate = dateString.trim();
+            // Handle YYYY-MM-DD or YYYY/MM/DD
+            let parts = trimmedDate.split(/[-/]/);
+            if (parts.length === 3 && parts[0].length === 4) {
+                 return new Date(Date.UTC(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2])));
+            }
+            // Handle DD-MM-YYYY or DD/MM/YYYY
+            if (parts.length === 3 && parts[2].length === 4) {
+                return new Date(Date.UTC(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0])));
+            }
+            // Fallback for other JS-parsable formats
+            const d = new Date(trimmedDate);
+            if (!isNaN(d.getTime())) return new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+            return null;
+        }
+
+
+        function transformGoogleSheetUrl(url) {
+            let sheetId, gid;
+            const idMatch = url.match(/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+            if (idMatch && idMatch[1]) {
+                sheetId = idMatch[1];
+            } else {
+                throw new Error('รูปแบบ Google Sheet URL ไม่ถูกต้อง ไม่พบ Sheet ID ในลิงก์');
+            }
+            const gidMatch = url.match(/[#&?]gid=([0-9]+)/);
+            if (gidMatch && gidMatch[1]) {
+                gid = gidMatch[1];
+            } else {
+                gid = '0';
+            }
+            return `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
+        }
+
+        async function fetchDataFromGoogleSheet(url, keywords) {
+            const csvUrl = transformGoogleSheetUrl(url);
+            // Add a cache-busting parameter to prevent fetching old versions
+            const response = await fetch(`${csvUrl}&t=${new Date().getTime()}`);
+            if (!response.ok) {
+                throw new Error(`ไม่สามารถดึงข้อมูลจาก Google Sheet ได้ (Status: ${response.status}) ตรวจสอบว่าลิงก์ถูกต้องและตั้งค่าการแชร์เป็น "ทุกคนที่มีลิงก์"`);
+            }
+            const csvText = await response.text();
+            return new Promise((resolve, reject) => {
+                Papa.parse(csvText, {
+                    header: false,
+                    skipEmptyLines: true,
+                    complete: (results) => {
+                        try {
+                            const dataArray = results.data;
+                            if (dataArray.length < 2) throw new Error("ไฟล์ข้อมูลว่างเปล่าหรือมีข้อมูลไม่เพียงพอ");
+
+                            let headerIndex = -1;
+                            // Search for the header row within the first 10 rows for efficiency
+                            for (let i = 0; i < Math.min(dataArray.length, 10); i++) {
+                                const row = dataArray[i].map(String); // Ensure all cells are strings for matching
+                                const foundKeywords = keywords.filter(kw => row.some(cell => cell && cell.trim().toLowerCase() === kw.toLowerCase()));
+                                if (foundKeywords.length >= 2) {
+                                    headerIndex = i;
+                                    break;
+                                }
+                            }
+
+                            if (headerIndex === -1) throw new Error(`ไม่พบหัวตารางที่ถูกต้องในไฟล์ (ต้องมีคอลัมน์ เช่น: ${keywords.join(', ')})`);
+
+                            const header = dataArray[headerIndex].map((h, i) => h ? h.trim() : `col_${i}`);
+                            const dataRows = dataArray.slice(headerIndex + 1);
+
+                            const jsonData = dataRows.map(row => {
+                                const obj = {};
+                                header.forEach((key, i) => {
+                                    obj[key] = row[i];
+                                });
+                                return obj;
+                            }).filter(obj => Object.values(obj).some(val => val !== null && val !== ''));
+
+                            resolve(jsonData);
+                        } catch (e) {
+                            reject(e);
+                        }
+                    },
+                    error: (error) => reject(new Error(`เกิดข้อผิดพลาดในการอ่านข้อมูล CSV: ${error.message}`))
+                });
+            });
+        }
+
         // --- CALCULATION FUNCTIONS ---
-        function validateInputs() { /* ... (function unchanged) ... */ }
-        async function calculateLoss() { /* ... (function unchanged) ... */ }
-        async function processTransformerData(transformerData, startDate, endDate) { /* ... (function unchanged) ... */ }
-        async function processMeterData(meterData, meterIds, selectedMonth, monthKeys) { /* ... (function unchanged) ... */ }
-        function calculateKeyMetrics(transformerData, startDate, endDate) { /* ... (function unchanged) ... */ }
+        function validateInputs() {
+            const transformerUrlValid = validateGoogleSheetUrl(elements.transformerUrl.value.trim());
+            const meterUrlValid = validateGoogleSheetUrl(elements.meterUrl.value.trim());
+            const hasUrls = transformerUrlValid && meterUrlValid;
+            const hasParams = elements.authorityInput.value.trim() && elements.startDateInput.value && elements.endDateInput.value && elements.monthInput.value;
+            const hasMappings = transformerMeterMappings.length > 0;
+
+            elements.calculateBtn.disabled = !(hasUrls && hasParams && hasMappings);
+        }
+
+        async function calculateLoss() {
+            elements.calculateBtn.disabled = true;
+            showElement(elements.loadingSpinner);
+            elements.calculateBtn.querySelector('span').textContent = "กำลังคำนวณ...";
+
+            try {
+                if (transformerMeterMappings.length === 0) {
+                    throw new Error('ยังไม่ได้ทำการจับคู่หม้อแปลงและมิเตอร์ กรุณากดปุ่ม "ตรวจสอบการจับคู่" ก่อน');
+                }
+                const [transformerData, meterData] = await Promise.all([
+                    fetchDataFromGoogleSheet(elements.transformerUrl.value, ['วันที่', 'KWH_TOT']),
+                    fetchDataFromGoogleSheet(elements.meterUrl.value, ['PEA Meter', 'หม้อแปลง'])
+                ]);
+
+                if (!transformerData.length || !meterData.length) throw new Error("ข้อมูลหม้อแปลงหรือมิเตอร์ว่างเปล่า");
+
+                const startDate = parseDate(elements.startDateInput.value);
+                const endDate = parseDate(elements.endDateInput.value);
+                const selectedMonthStr = elements.monthInput.value;
+                const authorityName = elements.authorityInput.value.trim();
+                const latitude = parseFloat(elements.latitudeInput.value) || null;
+                const longitude = parseFloat(elements.longitudeInput.value) || null;
+
+                if (!startDate || !endDate) throw new Error('รูปแบบวันที่ไม่ถูกต้อง');
+                if (startDate > endDate) throw new Error('วันที่เริ่มต้นต้องมาก่อนวันที่สิ้นสุด');
+                
+                const selectedMonth = new Date(selectedMonthStr + '-02T00:00:00Z').getUTCMonth();
+                const monthKeys = ['KWH_JAN', 'KWH_FEB', 'KWH_MAR', 'KWH_APR', 'KWH_MAY', 'KWH_JUN', 'KWH_JUL', 'KWH_AUG', 'KWH_SEP', 'KWH_OCT', 'KWH_NOV', 'KWH_DEC'];
+
+                const results = [];
+                let totalTransformerEnergy = 0;
+                let totalMeterEnergy = 0;
+                let allMeterBreakdowns = [];
+
+                for (const mapping of transformerMeterMappings) {
+                    const transformerResult = await processTransformerData(transformerData, startDate, endDate);
+                    const meterResult = await processMeterData(meterData, mapping.meterIds, selectedMonth, monthKeys);
+                    const loss = transformerResult.energy - meterResult.totalEnergy;
+                    const lossPercent = transformerResult.energy > 0 ? (loss / transformerResult.energy) * 100 : 0;
+                    results.push({
+                        transformerId: mapping.transformerId,
+                        transformerEnergy: transformerResult.energy,
+                        sumOfMeterEnergy: meterResult.totalEnergy,
+                        loss: loss,
+                        lossPercent: lossPercent,
+                        meterIds: mapping.meterIds,
+                        meterBreakdown: meterResult.breakdown
+                    });
+                    totalTransformerEnergy += transformerResult.energy;
+                    totalMeterEnergy += meterResult.totalEnergy;
+                    allMeterBreakdowns = allMeterBreakdowns.concat(meterResult.breakdown);
+                }
+
+                const keyMetrics = calculateKeyMetrics(transformerData, startDate, endDate);
+                
+                // ++ NEW: Generate Detailed Data Summary for AI analysis ++
+                const tDateKey = findKey(transformerData[0], ['Date', 'วันที่']);
+                const tEnergyKey = findKey(transformerData[0], ['Energy_Output_kWh', 'KWH_TOT']);
+                const tPowerKey = findKey(transformerData[0], ['P_TOT']);
+
+                const allParsedTransformerData = transformerData
+                    .map(row => ({
+                        date: parseDate(row[tDateKey]),
+                        kwh: parseFloat(row[tEnergyKey]) || 0,
+                        power: parseFloat(row[tPowerKey]) || 0
+                    }))
+                    .filter(row => row.date && !isNaN(row.kwh))
+                    .sort((a, b) => a.date - b.date);
+
+                const transformerDailySummary = [];
+                let previousDayKwh = (allParsedTransformerData.filter(r => r.date < startDate).pop() || allParsedTransformerData[0] || {kwh: 0}).kwh;
+
+                for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+                    const dayString = d.toISOString().split('T')[0];
+                    const recordsForDay = allParsedTransformerData.filter(r => r.date.toISOString().startsWith(dayString));
+
+                    if (recordsForDay.length > 0) {
+                        const lastRecordOfDay = recordsForDay[recordsForDay.length - 1];
+                        const dailyEnergyUsed = lastRecordOfDay.kwh - previousDayKwh;
+                        const peakPower = Math.max(...recordsForDay.map(r => r.power), 0);
+                        
+                        transformerDailySummary.push({
+                            date: dayString,
+                            energy_used: parseFloat(dailyEnergyUsed.toFixed(2)),
+                            peak_power: parseFloat(peakPower.toFixed(2))
+                        });
+                        
+                        previousDayKwh = lastRecordOfDay.kwh;
+                    }
+                }
+
+                const dataSummary = {
+                    transformerDaily: transformerDailySummary,
+                    meterBreakdown: allMeterBreakdowns
+                };
+
+                const dataToSave = {
+                    results,
+                    totalLoss: totalTransformerEnergy - totalMeterEnergy,
+                    totalTransformerEnergy, totalMeterEnergy,
+                    transformerCount: transformerMeterMappings.length,
+                    meterCount: allMeterBreakdowns.length,
+                    authority: authorityName,
+                    avgPF: keyMetrics.avgPF, peakPower: keyMetrics.peakPower, peakPowerDate: keyMetrics.peakPowerDate,
+                    mappings: transformerMeterMappings,
+                    latitude: latitude,
+                    longitude: longitude,
+                    transformer_url: elements.transformerUrl.value.trim(),
+                    meter_url: elements.meterUrl.value.trim(),
+                    dataSummary: dataSummary, // ++ NEW: Add detailed summary to the payload
+                    lastUpdated: new Date().toISOString()
+                };
+                
+                const docId = `${authorityName}_${transformerMeterMappings.map(m => m.transformerId).join('_')}_${selectedMonthStr}`;
+                const { error } = await supabase.from('analysis').upsert({ doc_id: docId, data: dataToSave }, { onConflict: 'doc_id' });
+                if (error) throw error;
+                
+                showSuccess(`วิเคราะห์เสร็จสิ้น! พบ ${transformerMeterMappings.length} หม้อแปลง และ ${allMeterBreakdowns.length} มิเตอร์`);
+            } catch (error) {
+                showError(`เกิดข้อผิดพลาด: ${error.message}`);
+            } finally {
+                hideElement(elements.loadingSpinner);
+                elements.calculateBtn.querySelector('span').textContent = "คำนวณและบันทึกข้อมูล";
+                validateInputs();
+            }
+        }
+
+        async function processTransformerData(transformerData, startDate, endDate) {
+            const tDateKey = findKey(transformerData[0], ['Date', 'วันที่']);
+            const tEnergyKey = findKey(transformerData[0], ['Energy_Output_kWh', 'KWH_TOT']);
+            if (!tDateKey || !tEnergyKey) throw new Error(`ไม่พบคอลัมน์ Date/วันที่ หรือ KWH_TOT ในไฟล์หม้อแปลง`);
+
+            const sortedData = transformerData
+                .map(row => ({ date: parseDate(row[tDateKey]), kwh: parseFloat(row[tEnergyKey]) || 0 }))
+                .filter(row => row.date && !isNaN(row.kwh))
+                .sort((a, b) => a.date - b.date);
+                
+            if (sortedData.length === 0) throw new Error("ไม่พบข้อมูลที่ถูกต้องในไฟล์หม้อแปลงหลังจากการกรอง");
+
+            let startRecord = sortedData.filter(r => r.date < startDate).pop();
+            if (!startRecord) startRecord = sortedData[0];
+            
+            const endRecord = sortedData.filter(r => r.date <= endDate).pop();
+
+            if (!endRecord) throw new Error(`ไม่พบข้อมูล KWH_TOT ณ วันที่สิ้นสุด (${endDate.toLocaleDateString()})`);
+
+            const energy = endRecord.kwh - startRecord.kwh;
+            if (isNaN(energy) || energy < 0) console.warn(`การคำนวณพลังงานหม้อแปลงผิดพลาด (End: ${endRecord.kwh}, Start: ${startRecord.kwh})`);
+            
+            return { energy };
+        }
+
+        async function processMeterData(meterData, meterIds, selectedMonth, monthKeys) {
+            const mIdKey = findKey(meterData[0], ['Meter_ID', 'PEA Meter']);
+            const meterEnergyKey = findKey(meterData[0], [monthKeys[selectedMonth]]);
+            if (!mIdKey || !meterEnergyKey) throw new Error(`ไม่พบคอลัมน์ PEA Meter หรือ ${monthKeys[selectedMonth]} ในไฟล์มิเตอร์`);
+
+            const breakdown = [];
+            let totalEnergy = 0;
+            const meterMap = new Map(meterData.map(row => [String(row[mIdKey]).trim(), row]));
+
+            for (const meterId of meterIds) {
+                const meterRecord = meterMap.get(String(meterId).trim());
+                const energy = meterRecord ? (parseFloat(meterRecord[meterEnergyKey]) || 0) : 0;
+                breakdown.push({ meterId, energy });
+                totalEnergy += energy;
+                if (!meterRecord) console.warn(`ไม่พบข้อมูลมิเตอร์ ${meterId}`);
+            }
+            return { totalEnergy, breakdown };
+        }
+
+        function calculateKeyMetrics(transformerData, startDate, endDate) {
+            const tDateKey = findKey(transformerData[0], ['Date', 'วันที่']);
+            const tPfKey = findKey(transformerData[0], ['PF_TOT']);
+            const tPowerKey = findKey(transformerData[0], ['P_TOT']);
+
+            const rangeData = transformerData
+                .map(row => ({ ...row, parsedDate: parseDate(row[tDateKey]) }))
+                .filter(row => row.parsedDate && row.parsedDate >= startDate && row.parsedDate <= endDate);
+
+            if (rangeData.length === 0) return { avgPF: 0, peakPower: 0, peakPowerDate: '-' };
+
+            const pfValues = rangeData.map(r => parseFloat(r[tPfKey]) || 0).filter(v => v > 0);
+            const avgPF = pfValues.length > 0 ? pfValues.reduce((s, v) => s + v, 0) / pfValues.length : 0;
+            
+            const peakRecord = rangeData.reduce((max, row) => (parseFloat(row[tPowerKey]) || 0) > (parseFloat(max[tPowerKey]) || 0) ? row : max, rangeData[0]);
+            
+            return {
+                avgPF,
+                peakPower: parseFloat(peakRecord[tPowerKey]) || 0,
+                peakPowerDate: peakRecord[tDateKey] || '-'
+            };
+        }
         
         // --- DISPLAY FUNCTIONS ---
-        async function displayResults(currentMonthData, historicalData) { /* ... (function unchanged) ... */ }
-        
+        async function displayResults(currentMonthData, historicalData) { // ++ MODIFIED ++: Added historicalData parameter
+            hideElement(elements.actionPlanSection);
+            hideElement(elements.actionButtonsContainer);
+            
+            elements.kpiTransformerEnergy.textContent = (currentMonthData.totalTransformerEnergy || 0).toLocaleString('en-US', { maximumFractionDigits: 2 });
+            elements.kpiMeterEnergy.textContent = (currentMonthData.totalMeterEnergy || 0).toLocaleString('en-US', { maximumFractionDigits: 2 });
+            elements.kpiLoss.textContent = (currentMonthData.totalLoss || 0).toLocaleString('en-US', { maximumFractionDigits: 2 });
+
+            const avgLossPercent = currentMonthData.totalTransformerEnergy > 0 ? (currentMonthData.totalLoss / currentMonthData.totalTransformerEnergy) * 100 : 0;
+            elements.kpiLossPercent.textContent = `${avgLossPercent.toFixed(2)}%`;
+
+            updateKeyMetrics(currentMonthData);
+            updateResultsTable(currentMonthData);
+            renderCharts(currentMonthData, historicalData); // ++ MODIFIED ++: Pass historicalData
+            renderTransformerMap(currentMonthData);
+            await getAiAnalysis(currentMonthData.results, avgLossPercent, currentMonthData.dataSummary, historicalData); // ++ MODIFIED ++: Pass both summaries
+            await checkAndDisplayFeedback();
+        }
+
         function calculateAndDisplayOverallSummary(allData) {
-            let totalTransformers = 0, totalMeters = 0, totalEnergyOut = 0, totalEnergyIn = 0;
+            let totalTransformers = 0;
+            let totalMeters = 0;
+            let totalEnergyOut = 0;
+            let totalEnergyIn = 0;
             const uniqueTransformerGroups = new Set();
+
             for (const authority in allData) {
                 for (const transformerKey in allData[authority]) {
-                    if (uniqueTransformerGroups.has(transformerKey)) continue;
-                    uniqueTransformerGroups.add(transformerKey);
-                    const latestMonth = Object.keys(allAnalysisData[authority][transformerKey]).sort().pop();
-                    if (latestMonth) {
-                        const d = allAnalysisData[authority][transformerKey][latestMonth];
-                        totalTransformers += d.transformerCount || 0; totalMeters += d.meterCount || 0;
-                        totalEnergyOut += d.totalTransformerEnergy || 0; totalEnergyIn += d.totalMeterEnergy || 0;
+                     if (uniqueTransformerGroups.has(transformerKey)) continue;
+                     uniqueTransformerGroups.add(transformerKey);
+                    
+                     const latestMonth = Object.keys(allAnalysisData[authority][transformerKey]).sort().pop();
+                     if (latestMonth) {
+                        const latestData = allAnalysisData[authority][transformerKey][latestMonth];
+                        totalTransformers += latestData.transformerCount || 0;
+                        totalMeters += latestData.meterCount || 0;
+                        totalEnergyOut += latestData.totalTransformerEnergy || 0;
+                        totalEnergyIn += latestData.totalMeterEnergy || 0;
                     }
                 }
             }
+
             const totalLoss = totalEnergyOut - totalEnergyIn;
             const lossPercent = totalEnergyOut > 0 ? (totalLoss / totalEnergyOut) * 100 : 0;
+
             elements.summaryTotalTransformers.textContent = totalTransformers.toLocaleString();
             elements.summaryTotalMeters.textContent = totalMeters.toLocaleString();
             elements.summaryEnergyOut.textContent = (totalEnergyOut || 0).toLocaleString('en-US', { maximumFractionDigits: 0 });
@@ -1175,175 +1811,914 @@
             elements.summaryTotalLoss.textContent = (totalLoss || 0).toLocaleString('en-US', { maximumFractionDigits: 0 });
             elements.summaryLossPercent.textContent = `${lossPercent.toFixed(2)}%`;
             
-            initializeMissionControl(allData); 
+            renderHighestLossChart(allData);
         }
 
-        function updateKeyMetrics(data) { /* ... (function unchanged) ... */ }
-        function updateResultsTable(data) { /* ... (function unchanged) ... */ }
+        function updateKeyMetrics(data) {
+            elements.metricPf.textContent = (data.avgPF || 0).toFixed(2);
+            if (data.avgPF >= 0.95) elements.metricPf.className = 'text-2xl font-bold text-green-600';
+            else if (data.avgPF >= 0.90) elements.metricPf.className = 'text-2xl font-bold text-yellow-500';
+            else elements.metricPf.className = 'text-2xl font-bold text-red-500';
 
-        // --- MISSION CONTROL FUNCTIONS ---
-        function initializeMissionControl(allData) {
-            const computedData = [];
+            elements.metricPeakPower.textContent = `${(data.peakPower || 0).toLocaleString('en-US', { maximumFractionDigits: 2 })} kW`;
+            elements.metricPeakDate.textContent = data.peakPowerDate || '-';
+        }
+
+        function updateResultsTable(data) {
+            if (!elements.resultsTable) return;
+            elements.resultsTable.innerHTML = '';
+            (data.results || []).forEach(res => {
+                const row = document.createElement('tr');
+                let statusClass = 'status-success', statusText = 'ปกติ';
+                if (res.lossPercent > 10) { statusClass = 'status-error'; statusText = 'สูง'; } 
+                else if (res.lossPercent > 5) { statusClass = 'status-warning'; statusText = 'ปานกลาง'; }
+                row.innerHTML = `
+                    <td class="font-medium">${res.transformerId}</td>
+                    <td>${(res.transformerEnergy || 0).toLocaleString('en-US', { maximumFractionDigits: 2 })}</td>
+                    <td>${(res.sumOfMeterEnergy || 0).toLocaleString('en-US', { maximumFractionDigits: 2 })}</td>
+                    <td>${(res.loss || 0).toLocaleString('en-US', { maximumFractionDigits: 2 })}</td>
+                    <td><span class="font-bold">${(res.lossPercent || 0).toFixed(2)}%</span></td>
+                    <td><span class="status-indicator ${statusClass}">${statusText}</span></td>
+                    <td class="text-sm">${(res.meterIds || []).join(', ')}</td>
+                `;
+                elements.resultsTable.appendChild(row);
+            });
+        }
+
+        // --- CHART FUNCTIONS ---
+        function renderCharts(currentMonthData, historicalData) { // ++ MODIFIED ++
+            renderTrendChart(currentMonthData);
+            renderMeterChart(historicalData); // ++ MODIFIED ++: Now uses aggregated historical data
+            renderSuspiciousMeterChart(historicalData); // ++ MODIFIED ++
+        }
+
+        function renderHighestLossChart(allData) {
+            if (charts.highestLoss) charts.highestLoss.destroy();
+            const latestLossData = [];
+
             for (const authority in allData) {
                 for (const transformerKey in allData[authority]) {
-                    const months = Object.keys(allData[authority][transformerKey]).sort();
-                    if (months.length === 0) continue;
-                    const latestMonth = months[months.length - 1];
-                    const data = allData[authority][transformerKey][latestMonth];
-                    let suspiciousMeterCount = 0;
-                    if (data.dataSummary && data.dataSummary.meterBreakdown) {
-                       suspiciousMeterCount = data.dataSummary.meterBreakdown.filter(m => m.energy <= 0).length;
+                    const latestMonth = Object.keys(allData[authority][transformerKey]).sort().pop();
+                    if(latestMonth) {
+                        const latestDataForGroup = allAnalysisData[authority][transformerKey][latestMonth];
+                        if (latestDataForGroup && latestDataForGroup.results) {
+                            latestDataForGroup.results.forEach(result => {
+                                latestLossData.push({
+                                    transformerId: result.transformerId,
+                                    lossPercent: result.lossPercent || 0,
+                                    authority: authority 
+                                });
+                            });
+                        }
                     }
-                    const { latitude: lat, longitude: lon } = data;
-                    data.results.forEach(res => {
-                        computedData.push({ ...res, id: res.transformerId, authority, transformerKey, avgPF: data.avgPF || 0, suspiciousMeterCount, peakPower: data.peakPower || 0, dailyData: data.dataSummary?.transformerDaily || [], lat, lon });
+                }
+            }
+            
+            const uniqueLossData = Array.from(new Map(latestLossData.map(item => [item.transformerId, item])).values());
+            const topTenLoss = uniqueLossData.sort((a, b) => b.lossPercent - a.lossPercent).slice(0, 10);
+
+            if (topTenLoss.length === 0) {
+                elements.highestLossChart.innerHTML = '<div class="text-center py-10 text-gray-500">ไม่มีข้อมูลเพียงพอสำหรับแสดงกราฟ</div>';
+                return;
+            }
+
+            const getBarColor = (value) => {
+                if (value > 20) return '#b91c1c';
+                if (value > 15) return '#ef4444';
+                if (value > 10) return '#f97316';
+                if (value > 5) return '#f59e0b';
+                return '#10b981';
+            };
+
+            const options = {
+                series: [{ name: 'Loss (%)', data: topTenLoss.map(d => d.lossPercent.toFixed(2)) }],
+                chart: { 
+                    type: 'bar', 
+                    height: 450, 
+                    toolbar: { 
+                        show: false
+                    },
+                    zoom: {
+                        enabled: false
+                    }
+                },
+                plotOptions: { bar: { columnWidth: '55%', borderRadius: 8, distributed: true } },
+                colors: topTenLoss.map(d => getBarColor(d.lossPercent)),
+                dataLabels: { 
+                    enabled: true, 
+                    formatter: (val) => val + "%", 
+                    offsetY: -20, 
+                    style: { 
+                        fontSize: '12px', 
+                        colors: ["#304758"] 
+                    } 
+                },
+                legend: { show: false },
+                xaxis: {
+                    categories: topTenLoss.map(d => d.transformerId),
+                    labels: {
+                        rotate: -65,
+                        rotateAlways: true,
+                        hideOverlappingLabels: true,
+                        trim: false,
+                        style: {
+                            fontSize: '11px',
+                            fontFamily: 'Sarabun, sans-serif',
+                        },
+                    },
+                    title: { text: 'รหัสหม้อแปลง' },
+                    tickPlacement: 'on'
+                },
+                yaxis: { title: { text: 'เปอร์เซ็นต์ Loss (%)' }, labels: { formatter: (val) => val.toFixed(0) + '%' } },
+                title: { text: '10 อันดับหม้อแปลงที่ค่า Loss สูงสุด', align: 'left', style: { fontSize: '22px', fontWeight: 'bold' } },
+                subtitle: { text: 'ข้อมูลล่าสุดจากผลการวิเคราะห์ทั้งหมดในระบบ', align: 'left', style: { color: '#6b7280' } },
+                tooltip: { 
+                    theme: 'dark', 
+                    y: { 
+                        formatter: function(val, opts) {
+                            const authority = topTenLoss[opts.dataPointIndex].authority;
+                            return `${val} % (การไฟฟ้า: ${authority})`
+                        }
+                    } 
+                },
+                grid: { borderColor: '#e5e7eb', strokeDashArray: 4 },
+                noData: { text: 'กำลังรอข้อมูล...' }
+            };
+
+            charts.highestLoss = new ApexCharts(elements.highestLossChart, options);
+            charts.highestLoss.render();
+        }
+
+        function renderTrendChart(data) {
+            if (charts.trend) charts.trend.destroy();
+            const selectedAuthority = elements.viewAuthoritySelect.value;
+            const selectedTransformer = elements.viewTransformerSelect.value;
+            const transformerHistory = (allAnalysisData[selectedAuthority] && allAnalysisData[selectedAuthority][selectedTransformer]) || {};
+            const sortedMonths = Object.keys(transformerHistory).sort();
+            const trendData = sortedMonths.map(month => ({
+                month,
+                transformer: transformerHistory[month].totalTransformerEnergy || 0,
+                meters: transformerHistory[month].totalMeterEnergy || 0
+            }));
+            
+            const trendOptions = {
+                series: [{ name: 'พลังงานหม้อแปลง', data: trendData.map(m => m.transformer.toFixed(2)) }, { name: 'ผลรวมพลังงานมิเตอร์', data: trendData.map(m => m.meters.toFixed(2)) }],
+                chart: { type: 'line', height: 350, toolbar: { show: true } },
+                stroke: { curve: 'smooth', width: 4 },
+                xaxis: { categories: trendData.map(m => m.month), title: { text: 'เดือน' } },
+                yaxis: { title: { text: 'พลังงาน (kWh)' } },
+                tooltip: { y: { formatter: (val) => `${parseFloat(val).toLocaleString('en-US', { maximumFractionDigits: 2 })} kWh` } },
+                colors: ['#3b82f6', '#10b981'],
+                markers: { size: 5 }
+            };
+            charts.trend = new ApexCharts(elements.trendChart, trendOptions);
+            charts.trend.render();
+        }
+        
+        // ++ MODIFIED: This chart now uses aggregated historical data for a more accurate view
+        function renderMeterChart(historicalData) {
+            if (charts.meter) charts.meter.destroy();
+
+            const meterData = Object.entries(historicalData.meterMonthlyTotals).map(([meterId, monthlyData]) => ({
+                meterId,
+                ...monthlyData
+            }));
+            
+            const sortedMeters = meterData.sort((a, b) => b.total - a.total).slice(0, 10);
+            const allMonths = [...new Set(meterData.flatMap(m => Object.keys(m).filter(k => k !== 'meterId' && k !== 'total')))].sort();
+
+            const series = allMonths.map(month => ({
+                name: month,
+                data: sortedMeters.map(meter => meter[month] || 0)
+            }));
+
+            const meterOptions = {
+                series: series,
+                chart: { type: 'bar', height: 400, stacked: true, toolbar: { show: true } },
+                plotOptions: { bar: { horizontal: true } },
+                stroke: { width: 1, colors: ['#fff'] },
+                xaxis: {
+                    categories: sortedMeters.map(m => m.meterId),
+                    title: { text: 'พลังงานสะสม (kWh)' },
+                    labels: {
+                        formatter: function (val) {
+                            return val.toLocaleString('en-US', { maximumFractionDigits: 0 });
+                        }
+                    }
+                },
+                yaxis: { title: { show: false } },
+                tooltip: {
+                    y: {
+                        formatter: function (val) {
+                            return val.toLocaleString('en-US', { maximumFractionDigits: 2 }) + " kWh";
+                        }
+                    }
+                },
+                fill: { opacity: 1 },
+                legend: { position: 'top', horizontalAlign: 'left', offsetX: 40 }
+            };
+            charts.meter = new ApexCharts(elements.meterChart, meterOptions);
+            charts.meter.render();
+        }
+
+        // ++ MODIFIED: This chart also uses aggregated historical data
+        function renderSuspiciousMeterChart(historicalData) {
+            if (charts.suspiciousMeter) charts.suspiciousMeter.destroy();
+
+            const suspiciousMeters = Object.entries(historicalData.meterMonthlyTotals)
+                .map(([meterId, data]) => ({ meterId, total: data.total }))
+                .filter(m => m.total <= 0);
+
+            if (suspiciousMeters.length === 0) {
+                hideElement(elements.suspiciousMeterChart);
+                showElement(elements.noSuspiciousMeters);
+                return;
+            }
+
+            showElement(elements.suspiciousMeterChart);
+            hideElement(elements.noSuspiciousMeters);
+
+            const options = {
+                series: [{ name: 'Energy (kWh)', data: suspiciousMeters.map(m => m.total.toFixed(2)) }],
+                chart: { type: 'bar', height: 250, toolbar: { show: false } },
+                colors: ['#ef4444'],
+                plotOptions: { bar: { horizontal: true, borderRadius: 4 } },
+                xaxis: { 
+                    categories: suspiciousMeters.map(m => m.meterId), 
+                    title: { text: 'พลังงานสะสม (kWh)' } 
+                },
+                yaxis: {
+                    labels: {
+                        style: {
+                            fontSize: '10px'
+                        }
+                    }
+                },
+                tooltip: { y: { formatter: (val) => `${parseFloat(val).toLocaleString()} kWh` } },
+            };
+
+            charts.suspiciousMeter = new ApexCharts(elements.suspiciousMeterChart, options);
+            charts.suspiciousMeter.render();
+        }
+
+        // *** NEW: Map Rendering Function (Google Maps) ***
+        function renderTransformerMap(data) {
+            const lat = data.latitude;
+            const lon = data.longitude;
+            const transformerIds = data.mappings.map(m => m.transformerId).join(', ');
+
+            if (lat && lon) {
+                showElement(elements.transformerMapContainer);
+                hideElement(elements.mapNoData);
+
+                const position = { lat: lat, lng: lon };
+
+                if (!mapInstance) {
+                    mapInstance = new google.maps.Map(elements.transformerMapContainer, {
+                        center: position,
+                        zoom: 16,
+                        mapId: 'TRANSFORMER_LOSS_MAP' // Optional: for cloud-based styling
+                    });
+                } else {
+                    mapInstance.setCenter(position);
+                }
+
+                if (mapMarker) {
+                    mapMarker.setMap(null); // Remove previous marker
+                }
+
+                mapMarker = new google.maps.Marker({
+                    position: position,
+                    map: mapInstance,
+                    title: transformerIds,
+                });
+
+                const infoWindow = new google.maps.InfoWindow({
+                    content: `<b>หม้อแปลง:</b><br>${transformerIds}`
+                });
+
+                mapMarker.addListener("click", () => {
+                    infoWindow.open({
+                        anchor: mapMarker,
+                        map: mapInstance,
+                    });
+                });
+                
+                // Open it by default
+                infoWindow.open({ anchor: mapMarker, map: mapInstance });
+
+            } else {
+                hideElement(elements.transformerMapContainer);
+                showElement(elements.mapNoData);
+            }
+        }
+
+        // --- AI ANALYSIS & ACTION PLAN (GEMINI API) ---
+        async function callGeminiAPI(prompt) {
+            const apiKey = "AIzaSyDwU3rcd0Lr5hS9BsBPcIXitu5YL-IEONQ"; // ใช้ Key ของคุณ
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${apiKey}`;
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }] }] })
+            });
+            if (!response.ok) {
+                 const errorBody = await response.text();
+                 throw new Error(`API Error: ${response.status}. ${errorBody}`);
+            }
+            const result = await response.json();
+            if (result.candidates && result.candidates[0]?.content?.parts[0]?.text) {
+                return result.candidates[0].content.parts[0].text;
+            }
+            if(result.promptFeedback?.blockReason){
+                throw new Error(`AI request blocked: ${result.promptFeedback.blockReason}`);
+            }
+            throw new Error("ไม่ได้รับผลลัพธ์ที่ถูกต้องจาก AI");
+        }
+
+        // ++ MODIFIED: Major upgrade to the AI analysis function and prompt
+        async function getAiAnalysis(results, avgLossPercent, dataSummary, historicalData) {
+            showElement(elements.aiLoader);
+            hideElement(elements.aiContent);
+            hideElement(elements.aiError);
+            hideElement(elements.actionButtonsContainer);
+            hideElement(elements.actionPlanSection);
+            
+            const currentDataSummary = (results || []).map(r => `- หม้อแปลง ${r.transformerId}: Loss ${r.lossPercent.toFixed(2)}%`).join('\n');
+            
+            let summaryText = '';
+            if (dataSummary) {
+                summaryText += "\n\n**ข้อมูลสรุปรายวันจากหม้อแปลง (เดือนล่าสุด):**\n";
+                if (dataSummary.transformerDaily && dataSummary.transformerDaily.length > 0) {
+                    summaryText += dataSummary.transformerDaily.map(d => `- วันที่ ${d.date}: ใช้พลังงาน ${d.energy_used} kWh, ความต้องการสูงสุด ${d.peak_power} kW`).join('\n');
+                } else {
+                    summaryText += "ไม่มีข้อมูลรายวัน\n";
+                }
+            }
+
+            let historicalSummaryText = '';
+            if (historicalData && historicalData.monthlyLoss.length > 1) {
+                historicalSummaryText += "\n\n**ข้อมูลสรุปแนวโน้มย้อนหลัง:**\n";
+                historicalSummaryText += historicalData.monthlyLoss.map(h => `- เดือน ${h.month}: Loss ${h.lossPercent.toFixed(2)}%`).join('\n');
+            }
+
+            const prompt = `ในฐานะผู้เชี่ยวชาญด้านวิศวกรรมไฟฟ้า, โปรดวิเคราะห์ข้อมูลค่า Loss ของหม้อแปลงต่อไปนี้ และจัดทำรายงานสรุปที่อ่านง่ายสำหรับผู้ปฏิบัติงาน โดยใช้ Markdown และ Emojis เพื่อเน้นประเด็นสำคัญ
+
+**ข้อมูลสรุปค่า Loss (เดือนล่าสุด):**
+${currentDataSummary}
+- **Loss เฉลี่ยรวม:** ${avgLossPercent.toFixed(2)}%
+${historicalSummaryText}
+${summaryText}
+
+**คำสั่ง:**
+โปรดสร้างบทวิเคราะห์เชิงลึกตามหัวข้อต่อไปนี้ โดยอ้างอิงจาก **ข้อมูลทั้งหมดที่มี**:
+
+### ⚡️ สรุปภาพรวมและแนวโน้ม
+- ประเมินสถานการณ์ของ **เดือนล่าสุด** เทียบกับ **แนวโน้มย้อนหลัง** (ดีขึ้น, แย่ลง, คงที่)
+
+### 📈 การวิเคราะห์พฤติกรรมการใช้พลังงาน
+- จากข้อมูลสรุปรายวัน, มีรูปแบบการใช้พลังงานที่ผิดปกติหรือไม่? (เช่น สูง/ต่ำผิดปกติในบางวัน, แตกต่างกันมากระหว่างวันทำงาน/วันหยุด)
+- ความต้องการพลังงานสูงสุด (Peak Power) สอดคล้องกับการใช้พลังงานรวมหรือไม่?
+
+### 🔧 การสูญเสียทางเทคนิค (Technical Loss)
+- สรุปความเป็นไปได้ของ Loss ที่เกิดจากปัจจัยทางเทคนิค (เช่น อุปกรณ์, สายไฟ) สั้นๆ
+
+### 🕵️‍♂️ **การวิเคราะห์เชิงลึก: การสูญเสียที่ไม่ใช่ทางเทคนิค (Non-technical Loss)**
+- **(เน้นส่วนนี้เป็นพิเศษ)** จากข้อมูลพฤติกรรมการใช้งานและค่า Loss ที่สูง, ให้วิเคราะห์ความเป็นไปได้ของ Non-technical Loss
+- **สาเหตุที่เป็นไปได้:**
+    - **การลักลอบใช้ไฟฟ้า:** มีวันที่ใช้พลังงานสูงแต่ไม่สอดคล้องกับพฤติกรรมปกติหรือไม่?
+    - **มิเตอร์ผิดพลาด/ชำรุด:** เปรียบเทียบข้อมูลการใช้พลังงานของมิเตอร์ทั้งหมด มีมิเตอร์ตัวใดที่แสดงค่าผิดปกติ (เช่น ค่าเป็น 0 หรือต่ำมาก ทั้งที่เป็นผู้ใช้ไฟรายใหญ่) หรือไม่?
+- **ขั้นตอนการตรวจสอบ:**
+    - เสนอแนะขั้นตอนที่เป็นรูปธรรม **อย่างน้อย 3 ข้อ** สำหรับทีมช่างเพื่อเข้าตรวจสอบปัญหา โดยอ้างอิงจากข้อมูลรายวันและข้อมูลมิเตอร์
+
+### 🚨 ข้อเสนอแนะเร่งด่วน
+- สรุปสิ่งที่ควรทำเป็นอันดับแรก 1-2 ข้อที่สำคัญที่สุด
+
+**ข้อกำหนด:**
+- ใช้ภาษาไทยที่กระชับ เข้าใจง่าย และจัดรูปแบบให้อ่านสบายตา
+- **เริ่มต้นบทวิเคราะห์ด้วยหัวข้อ "### ⚡️ สรุปภาพรวมและแนวโน้ม" ทันที**`;
+
+            try {
+                currentAnalysisText = await callGeminiAPI(prompt);
+                elements.aiContent.innerHTML = marked.parse(currentAnalysisText);
+                showElement(elements.aiContent);
+                showElement(elements.actionButtonsContainer);
+            } catch (error) {
+                console.error("AI Analysis Error:", error);
+                elements.aiErrorText.textContent = `เกิดข้อผิดพลาดในการวิเคราะห์: ${error.message}`;
+                showElement(elements.aiError);
+            } finally {
+                hideElement(elements.aiLoader);
+            }
+        }
+        
+        async function generateActionPlan() {
+             showElement(elements.actionPlanSection);
+             showElement(elements.actionPlanLoader);
+             hideElement(elements.actionPlanContent);
+             hideElement(elements.actionPlanError);
+             elements.generateActionPlanBtn.disabled = true;
+
+             const prompt = `จากบทวิเคราะห์ AI:
+---
+${currentAnalysisText}
+---
+และอ้างอิงตาม "แบบฟอร์มการตรวจหม้อแปลง (มป.3)" ซึ่งมีรายการตรวจสอบดังนี้:
+- ค่าฉนวน (น้ำมัน, ขดลวด)
+- ค่า Ground
+- การตรวจสอบอุปกรณ์ประกอบ (ตัวถัง, Bushing, Tap Changer, Arcing Horn, ล่อฟ้า, ฟิวส์)
+- การตรวจเปลี่ยนและเติมน้ำมัน (ระดับน้ำมัน, สารดูดความชื้น, ปะเก็น)
+- การตรวจสอบสภาพรับโหลด (กระแส, แรงดัน)
+
+โปรดสร้าง "แผนปฏิบัติการ" (Action Plan) ที่เป็นรูปธรรมสำหรับทีมช่างไฟฟ้า โดยแบ่งออกเป็น **2 ส่วนที่ชัดเจน** ดังนี้:
+
+**ส่วนที่ 1: แผนการตรวจสอบตามแบบฟอร์ม มป.3**
+- สร้างตาราง Markdown ที่มี 4 คอลัมน์ตามนี้เป๊ะๆ: "งานที่ต้องทำ (จากแบบฟอร์ม มป.3)", "หม้อแปลงเป้าหมาย", "ความสำคัญ", และ "คำแนะนำเพิ่มเติม"
+- เลือกเฉพาะรายการที่เกี่ยวข้องที่สุดจากแบบฟอร์ม มป.3 ที่ให้มาเท่านั้น เพื่อใส่ในตาราง
+
+**ส่วนที่ 2: คำแนะนำเพิ่มเติม (นอกเหนือจาก มป.3)**
+- สร้างรายการ (bullet list) ของคำแนะนำเพิ่มเติมที่ **ปฏิบัติได้จริง** และอยู่นอกเหนือขอบเขตของ มป.3 ข้างต้น (เช่น การตรวจสอบมิเตอร์ของผู้ใช้ไฟรายใหญ่, การสำรวจสายส่งเพื่อหาสัญญาณการลักลอบใช้ไฟ, หรือการตรวจสอบบันทึกข้อมูลย้อนหลัง)
+
+**ข้อกำหนด:**
+- ใช้ภาษาไทยที่กระชับและเข้าใจง่าย
+- ต้องมีทั้งสองส่วนแยกจากกันอย่างชัดเจน`;
+            
+             try {
+                const actionPlanText = await callGeminiAPI(prompt);
+                elements.actionPlanContent.innerHTML = marked.parse(actionPlanText);
+                showElement(elements.actionPlanContent);
+             } catch (error) {
+                console.error("Action Plan Error:", error);
+                elements.actionPlanErrorText.textContent = `เกิดข้อผิดพลาดในการสร้างแผน: ${error.message}`;
+                showElement(elements.actionPlanError);
+             } finally {
+                hideElement(elements.actionPlanLoader);
+                elements.generateActionPlanBtn.disabled = false;
+             }
+        }
+        
+        // --- SELECTOR FUNCTIONS ---
+        function populateSelectors(allData) {
+            const authorities = Object.keys(allData).sort();
+            elements.viewAuthoritySelect.innerHTML = '<option value="">-- เลือกการไฟฟ้า --</option>';
+            authorities.forEach(auth => {
+                elements.viewAuthoritySelect.innerHTML += `<option value="${auth}">${auth}</option>`;
+            });
+             // Clear subsequent dropdowns
+            elements.viewTransformerSelect.innerHTML = '<option value="">-- เลือกกลุ่มหม้อแปลง --</option>';
+            elements.viewMonthSelect.innerHTML = '<option value="">-- เลือกเดือน --</option>';
+        }
+
+        function populateTransformerSelector(allData, selectedAuthority) {
+            const transformers = selectedAuthority ? Object.keys(allData[selectedAuthority] || {}).sort() : [];
+            elements.viewTransformerSelect.innerHTML = '<option value="">-- เลือกกลุ่มหม้อแปลง --</option>';
+            transformers.forEach(tr => {
+                elements.viewTransformerSelect.innerHTML += `<option value="${tr}">${tr}</option>`;
+            });
+        }
+
+        function populateMonthSelector(allData, selectedAuthority, selectedTransformer) {
+            const months = (selectedAuthority && selectedTransformer && allAnalysisData[selectedAuthority]?.[selectedTransformer]) 
+                ? Object.keys(allAnalysisData[selectedAuthority][selectedTransformer]).sort().reverse() 
+                : [];
+            elements.viewMonthSelect.innerHTML = '<option value="">-- เลือกเดือน --</option>';
+            months.forEach(month => {
+                elements.viewMonthSelect.innerHTML += `<option value="${month}">${month}</option>`;
+            });
+        }
+        
+        // ++ NEW: Helper function to aggregate historical data for the selected group
+        function getHistoricalDataForGroup(auth, trans) {
+            const groupData = allAnalysisData[auth]?.[trans] || {};
+            const aggregatedData = {
+                meterMonthlyTotals: {},
+                monthlyLoss: []
+            };
+
+            const sortedMonths = Object.keys(groupData).sort();
+
+            for (const month of sortedMonths) {
+                const monthData = groupData[month];
+                const lossPercent = monthData.totalTransformerEnergy > 0 ? (monthData.totalLoss / monthData.totalTransformerEnergy) * 100 : 0;
+                aggregatedData.monthlyLoss.push({ month, lossPercent });
+
+                if (monthData.dataSummary && monthData.dataSummary.meterBreakdown) {
+                    monthData.dataSummary.meterBreakdown.forEach(meter => {
+                        if (!aggregatedData.meterMonthlyTotals[meter.meterId]) {
+                            aggregatedData.meterMonthlyTotals[meter.meterId] = { total: 0 };
+                        }
+                        aggregatedData.meterMonthlyTotals[meter.meterId][month] = meter.energy;
+                        aggregatedData.meterMonthlyTotals[meter.meterId].total += meter.energy;
                     });
                 }
             }
-            missionData = Array.from(new Map(computedData.map(item => [item.id, item])).values());
-            renderMissionHeatmap();
-            renderMissionLeaderboard(allData);
-            renderMissionCards();
-            updateMissionTargets('critical_loss');
+            return aggregatedData;
         }
 
-        function renderMissionHeatmap() {
-            if (!missionHeatmap) {
-                missionHeatmap = new google.maps.Map(document.getElementById('mission-heatmap-container'), { zoom: 10, center: { lat: 6.8941, lng: 101.4225 }, mapTypeId: 'satellite' });
+        // ++ MODIFIED: Now fetches and passes historical data
+        async function loadSelectedData() {
+            const auth = elements.viewAuthoritySelect.value;
+            const trans = elements.viewTransformerSelect.value;
+            const month = elements.viewMonthSelect.value;
+            
+            toggleElement(elements.deleteBtn, currentUser.role === 'admin' && analysisDone && month);
+
+            if (auth && trans && month && allAnalysisData[auth]?.[trans]?.[month]) {
+                hideElement(elements.userSelectionPrompt);
+                showElement(elements.resultsSection);
+                const currentMonthData = allAnalysisData[auth][trans][month];
+                const historicalData = getHistoricalDataForGroup(auth, trans); // Get all historical data for this group
+                await displayResults(currentMonthData, historicalData); // Pass both to the display function
+            } else {
+                 hideElement(elements.resultsSection);
+                 showElement(elements.userSelectionPrompt);
             }
-            const heatmapPoints = missionData.filter(d => d.lat && d.lon && d.lossPercent > 1).map(d => ({ location: new google.maps.LatLng(d.lat, d.lon), weight: d.lossPercent }));
-            new google.maps.visualization.HeatmapLayer({ data: heatmapPoints, map: missionHeatmap, radius: 30, opacity: 0.8 });
+        }
+        
+        function deleteCurrentAnalysis() {
+            const docId = `${elements.viewAuthoritySelect.value}_${elements.viewTransformerSelect.value}_${elements.viewMonthSelect.value}`;
+            if (!elements.viewAuthoritySelect.value || !elements.viewTransformerSelect.value || !elements.viewMonthSelect.value) {
+                return showError("กรุณาเลือกข้อมูลที่ต้องการลบให้ครบถ้วน");
+            }
+
+            showConfirmModal({
+                title: "ยืนยันการลบข้อมูล",
+                text: `คุณต้องการลบข้อมูลการวิเคราะห์ของเดือน ${elements.viewMonthSelect.value} นี้ใช่หรือไม่?`,
+                onConfirm: async () => {
+                    const { error } = await supabase.from('analysis').delete().eq('doc_id', docId);
+                    if (error) showError(`เกิดข้อผิดพลาดในการลบข้อมูล: ${error.message}`);
+                    else showSuccess("ลบข้อมูลสำเร็จแล้ว");
+                }
+            });
         }
 
-        function renderMissionLeaderboard(allData) {
-            const container = document.getElementById('mission-leaderboard-container');
-            const perfData = {};
-            for (const authority in allData) {
-                if (!perfData[authority]) perfData[authority] = { totalLoss: 0, count: 0, highest: { id: '-', loss: 0 } };
-                for (const key in allData[authority]) {
-                    const latestMonth = Object.keys(allData[authority][key]).sort().pop();
-                    if (latestMonth) {
-                        const latest = allData[authority][key][latestMonth];
-                        latest.results.forEach(res => {
-                            perfData[authority].totalLoss += res.lossPercent || 0; perfData[authority].count++;
-                            if (res.lossPercent > perfData[authority].highest.loss) perfData[authority].highest = { id: res.transformerId, loss: res.lossPercent };
-                        });
+        // --- AUTO-MAPPING FUNCTION ---
+        async function detectMappingsFromUrls() {
+            const detectBtn = document.getElementById('detect-mappings-btn');
+            const btnText = document.getElementById('detect-btn-text');
+            detectBtn.disabled = true;
+            btnText.textContent = 'กำลังตรวจสอบ...';
+            
+            try {
+                const meterData = await fetchDataFromGoogleSheet(elements.meterUrl.value, ['PEA Meter', 'หม้อแปลง']);
+                const mTransformerKey = findKey(meterData[0], ['หม้อแปลง', 'transformer']);
+                const mIdKey = findKey(meterData[0], ['PEA Meter', 'meter id']);
+                if (!mTransformerKey || !mIdKey) throw new Error('ไม่พบคอลัมน์ "หม้อแปลง" หรือ "PEA Meter"');
+
+                const mappings = Object.values(meterData.reduce((acc, row) => {
+                    const transformerId = row[mTransformerKey]?.trim();
+                    const meterId = row[mIdKey]?.trim();
+                    if (transformerId && meterId) {
+                        acc[transformerId] = acc[transformerId] || { transformerId, meterIds: [] };
+                        acc[transformerId].meterIds.push(meterId);
+                    }
+                    return acc;
+                }, {}));
+                
+                transformerMeterMappings = mappings;
+                if (mappings.length === 0) throw new Error('ไม่พบการจับคู่ที่ถูกต้องในไฟล์');
+                
+                document.getElementById('detected-mappings').innerHTML = `
+                    <h5 class="text-md font-semibold text-blue-800 mb-2">ตรวจพบ ${mappings.length} การจับคู่:</h5>
+                    <ul class="space-y-2 text-sm max-h-40 overflow-y-auto p-3 bg-white rounded-lg border">
+                        ${mappings.map(m => `<li><strong>${m.transformerId}</strong> ➜ ${m.meterIds.length} มิเตอร์</li>`).join('')}
+                    </ul>`;
+                showSuccess(`ตรวจพบ ${mappings.length} กลุ่มหม้อแปลง และ ${meterData.length} มิเตอร์`);
+            } catch (error) {
+                showError(`การจับคู่ล้มเหลว: ${error.message}`);
+                transformerMeterMappings = [];
+            } finally {
+                detectBtn.disabled = false;
+                btnText.textContent = 'ตรวจสอบการจับคู่';
+                validateInputs();
+            }
+        }
+
+        // --- NEW REPORTING FUNCTIONS ---
+        async function handleSaveReport(event) {
+            event.preventDefault();
+            const btn = event.submitter;
+            btn.disabled = true; btn.innerHTML = '<div class="spinner"></div> กำลังส่ง...';
+
+            const reportData = {
+                reporter_name: document.getElementById('report-name').value.trim(),
+                reporter_position: document.getElementById('report-position').value.trim(),
+                reporter_affiliation: document.getElementById('report-affiliation').value.trim(),
+                report_details: document.getElementById('report-details').value.trim(),
+                authority: elements.viewAuthoritySelect.value,
+                transformer_id: elements.viewTransformerSelect.value,
+                month: elements.viewMonthSelect.value,
+                analysis_doc_id: `${elements.viewAuthoritySelect.value}_${elements.viewTransformerSelect.value}_${elements.viewMonthSelect.value}`
+            };
+
+            if (!reportData.reporter_name || !reportData.report_details || !reportData.authority || !reportData.transformer_id || !reportData.month) {
+                showError("กรุณากรอกข้อมูลผู้รายงาน, รายละเอียด และเลือกข้อมูลการวิเคราะห์ให้ครบถ้วน");
+                btn.disabled = false; btn.innerHTML = 'ส่งรายงาน';
+                return;
+            }
+
+            try {
+                const { error } = await supabase.from('edit_reports').insert([reportData]);
+                if (error) throw error;
+                showSuccess("บันทึกรายงานการแก้ไขสำเร็จแล้ว");
+                hideModal('edit-report-modal-overlay');
+            } catch (error) {
+                showError(`เกิดข้อผิดพลาดในการบันทึก: ${error.message}`);
+            } finally {
+                 btn.disabled = false; btn.innerHTML = 'ส่งรายงาน';
+            }
+        }
+        
+        async function fetchAndDisplayReports() {
+            const { data: reports, error } = await supabase.from('edit_reports').select('*').order('created_at', { ascending: false });
+            if (error) return showError("ไม่สามารถโหลดรายงานได้");
+            
+            toggleElement(elements.noReportsMessage, reports.length === 0);
+            toggleElement(elements.reportsListContainer.querySelector('.data-table'), reports.length > 0);
+            elements.reportsTableBody.innerHTML = '';
+            
+            reports.forEach(report => {
+                const row = document.createElement('tr');
+                const isResponded = report.status === 'responded';
+                row.innerHTML = `
+                    <td>${new Date(report.created_at).toLocaleDateString('th-TH')}</td>
+                    <td>${report.reporter_name}</td>
+                    <td>${report.reporter_affiliation}</td>
+                    <td>${report.transformer_id}</td>
+                    <td><span class="status-indicator ${isResponded ? 'status-success' : 'status-warning'}">${isResponded ? 'ตอบกลับแล้ว' : 'รอตรวจสอบ'}</span></td>
+                    <td><button class="btn-secondary text-sm view-details-btn">ดูรายละเอียด</button></td>
+                `;
+                row.querySelector('.view-details-btn').addEventListener('click', () => showReportDetailsModal(report));
+                elements.reportsTableBody.appendChild(row);
+            });
+        }
+        
+        async function handleSaveAdminSuggestion() {
+            if (!currentReportId) return;
+            const btn = elements.saveAdminSuggestionBtn;
+            btn.disabled = true; btn.innerHTML = `<div class="spinner"></div> กำลังบันทึก...`;
+            try {
+                const { error } = await supabase
+                    .from('edit_reports')
+                    .update({ 
+                        admin_suggestions: elements.adminSuggestions.value.trim(),
+                        status: 'responded' 
+                    })
+                    .eq('id', currentReportId);
+                if (error) throw error;
+                showSuccess("บันทึกข้อเสนอแนะสำเร็จ");
+                hideModal('report-details-modal-overlay');
+            } catch (error) {
+                showError("เกิดข้อผิดพลาดในการบันทึก");
+            } finally {
+                btn.disabled = false; btn.innerHTML = 'บันทึกข้อเสนอแนะ';
+            }
+        }
+        
+        async function handleAnalyzeReport() {
+            if (!currentReportId) return;
+            
+            const btn = elements.analyzeReportBtn;
+            const btnText = btn.querySelector('.button-text');
+            const btnSpinner = btn.querySelector('.ai-spinner');
+            
+            btn.disabled = true;
+            btnText.textContent = 'กำลังวิเคราะห์...';
+            showElement(btnSpinner);
+            hideElement(btn.querySelector('svg'));
+            elements.reportAiAnalysisContent.innerHTML = '';
+            hideElement(elements.useAiAnalysisAsSuggestionBtn);
+
+            const reportDetails = elements.detailsReportDetails.textContent;
+            const adminSuggestions = elements.adminSuggestions.value;
+            
+            const prompt = `ในฐานะผู้จัดการฝ่ายวิศวกรรมไฟฟ้า, โปรดวิเคราะห์รายงานการแก้ไขปัญหาระบบไฟฟ้าดังนี้:
+---
+**รายละเอียดการแก้ไขจากผู้ปฏิบัติงาน:**
+${reportDetails}
+---
+**ข้อเสนอแนะจาก Admin:**
+${adminSuggestions || "ไม่มี"}
+---
+โปรดประเมิน:
+1.  **ความถูกต้องของการแก้ไข:** การดำเนินการสอดคล้องกับปัญหาที่อาจเกิดขึ้นหรือไม่?
+2.  **ประสิทธิผลที่คาดหวัง:** การแก้ไขนี้น่าจะช่วยลดค่า Loss ได้มากน้อยเพียงใด?
+3.  **ความเสี่ยงที่อาจเกิดขึ้น:** มีความเสี่ยงหรือผลกระทบข้างเคียงจากการแก้ไขนี้หรือไม่?
+4.  **คำแนะนำเพิ่มเติม:** มีขั้นตอนอื่นที่ควรทำเพิ่มเติมเพื่อยืนยันผลหรือป้องกันปัญหาในอนาคตหรือไม่?
+
+ใช้ภาษาไทย, สรุปให้กระชับ และจัดรูปแบบด้วย Markdown`;
+            
+            try {
+                const analysisText = await callGeminiAPI(prompt);
+                currentReportAiAnalysisText = analysisText; 
+                elements.reportAiAnalysisContent.innerHTML = marked.parse(analysisText);
+                showElement(elements.useAiAnalysisAsSuggestionBtn); 
+                
+                await supabase.from('edit_reports').update({ ai_report_analysis: analysisText }).eq('id', currentReportId);
+                showSuccess('วิเคราะห์รายงานสำเร็จ');
+            } catch (error) {
+                console.error("Error analyzing report:", error);
+                elements.reportAiAnalysisContent.innerHTML = `<p class="text-red-500">เกิดข้อผิดพลาดในการวิเคราะห์: ${error.message}</p>`;
+            } finally {
+                btn.disabled = false;
+                btnText.textContent = 'วิเคราะห์';
+                hideElement(btnSpinner);
+                showElement(btn.querySelector('svg'));
+            }
+        }
+
+        async function handleDeleteReport(reportId) {
+            showConfirmModal({
+                title: "ยืนยันการลบรายงาน", text: `คุณต้องการลบรายงานนี้อย่างถาวรใช่หรือไม่?`,
+                onConfirm: async () => {
+                    const { error } = await supabase.from('edit_reports').delete().eq('id', reportId);
+                    if (error) showError(`เกิดข้อผิดพลาด: ${error.message}`);
+                    else {
+                        showSuccess("ลบรายงานสำเร็จแล้ว");
+                        hideModal('report-details-modal-overlay');
                     }
                 }
-            }
-            const sorted = Object.entries(perfData).map(([auth, data]) => ({ authority: auth, avgLoss: data.count > 0 ? data.totalLoss / data.count : 0, count: data.count, highest: data.highest })).filter(i => i.count > 0).sort((a, b) => a.avgLoss - b.avgLoss);
-            container.innerHTML = '';
-            if(sorted.length === 0) { container.innerHTML = '<p class="text-center text-gray-500">ข้อมูลไม่พอจัดอันดับ</p>'; return; }
-            const maxLoss = Math.max(...sorted.map(i => i.avgLoss), 20);
-            sorted.forEach((item, index) => {
-                const rank = index + 1; let medal = rank;
-                if (rank === 1) medal = '🥇'; else if (rank === 2) medal = '🥈'; else if (rank === 3) medal = '🥉';
-                let barColor = 'bg-green-400';
-                if (item.avgLoss > 10) barColor = 'bg-red-400'; else if (item.avgLoss > 5) barColor = 'bg-yellow-400';
-                const barWidth = Math.max(10, 100 - (item.avgLoss / maxLoss) * 90);
-                const row = document.createElement('div');
-                row.className = 'p-3 bg-gray-50 rounded-lg border border-gray-200';
-                row.innerHTML = `<div class="flex items-center space-x-4"><div class="text-xl font-bold w-10 text-center">${medal}</div><div class="flex-grow"><div class="flex justify-between items-center"><span class="font-bold text-gray-800">${item.authority}</span><span class="font-mono font-bold text-lg ${item.avgLoss > 5 ? 'text-red-600' : 'text-green-600'}">${item.avgLoss.toFixed(2)}%</span></div><div class="w-full bg-gray-200 rounded-full h-2.5 mt-1"><div class="${barColor} h-2.5 rounded-full" style="width: ${barWidth}%"></div></div><div class="text-xs text-gray-500 mt-2"><span>ดูแล ${item.count} หม้อแปลง</span> | <span class="text-red-500">จุดเสี่ยง: ${item.highest.id} (${item.highest.loss.toFixed(1)}%)</span></div></div></div>`;
-                container.appendChild(row);
             });
         }
+        
+        async function checkAndDisplayFeedback() {
+            const docId = `${elements.viewAuthoritySelect.value}_${elements.viewTransformerSelect.value}_${elements.viewMonthSelect.value}`;
+            if (elements.viewAuthoritySelect.value && elements.viewTransformerSelect.value && elements.viewMonthSelect.value) {
+                 const { data, error } = await supabase
+                    .from('edit_reports').select('admin_suggestions')
+                    .eq('analysis_doc_id', docId).not('admin_suggestions', 'is', null)
+                    .order('created_at', { ascending: false }).limit(1);
 
-        function renderMissionCards() {
-            const container = document.getElementById('mission-cards-container');
-            const missions = [ { id: 'critical_loss', title: 'ล่าพื้นที่สีแดง', subtitle: 'กลุ่มสูญเสียวิกฤต (Loss > 15%)', icon: '🚨', bg: 'bg-red-50 hover:border-red-400' }, { id: 'ghost_meters', title: 'ตรวจมิเตอร์ผี', subtitle: 'กลุ่มมีมิเตอร์น่าสงสัย', icon: '🤔', bg: 'bg-yellow-50 hover:border-yellow-400' }, { id: 'low_pf', title: 'ปรับปรุงประสิทธิภาพ', subtitle: 'กลุ่ม Power Factor ต่ำ (PF < 0.95)', icon: '⚡️', bg: 'bg-blue-50 hover:border-blue-400' }];
-            container.innerHTML = missions.map(m => `<div data-mission-id="${m.id}" class="mission-card p-3 border-2 border-transparent rounded-lg flex items-center space-x-3 cursor-pointer ${m.bg} transition-all"><div class="text-2xl">${m.icon}</div><div><h4 class="font-bold text-gray-800">${m.title}</h4><p class="text-xs text-gray-600">${m.subtitle}</p></div></div>`).join('');
-            document.querySelectorAll('.mission-card').forEach(c => c.addEventListener('click', () => updateMissionTargets(c.dataset.missionId)));
-        }
-
-        function updateMissionTargets(missionId) {
-            document.querySelectorAll('.mission-card').forEach(el => el.classList.remove('border-indigo-400', 'bg-indigo-100'));
-            document.querySelector(`.mission-card[data-mission-id="${missionId}"]`).classList.add('border-indigo-400', 'bg-indigo-100');
-            
-            let targets = [];
-            switch(missionId) {
-                case 'critical_loss': targets = missionData.filter(d => d.lossPercent > 15).sort((a,b) => b.lossPercent - a.lossPercent); break;
-                case 'ghost_meters': targets = missionData.filter(d => d.suspiciousMeterCount > 0).sort((a,b) => b.lossPercent - a.lossPercent); break;
-                case 'low_pf': targets = missionData.filter(d => d.avgPF > 0 && d.avgPF < 0.95).sort((a,b) => a.avgPF - b.avgPF); break;
-            }
-            
-            document.getElementById('mission-targets-header').textContent = `พบ ${targets.length} เป้าหมาย`;
-            const container = document.getElementById('mission-targets-container');
-            container.innerHTML = targets.map(t => `<div class="mission-target-item p-3 rounded-md border bg-white cursor-pointer hover:bg-sky-50 hover:border-sky-400" data-target-id="${t.id}"><p class="font-bold text-sm text-gray-800">${t.id}</p><p class="text-xs text-sky-700 font-semibold">Loss: ${t.lossPercent.toFixed(1)}%</p></div>`).join('');
-            container.querySelectorAll('.mission-target-item').forEach(item => item.addEventListener('click', () => updateBriefingCard(item.dataset.targetId)));
-
-            if (targets.length > 0) {
-                updateBriefingCard(targets[0].id);
-                const firstTargetLocation = targets.find(t => t.lat && t.lon);
-                if (firstTargetLocation && missionHeatmap) missionHeatmap.panTo({ lat: firstTargetLocation.lat, lng: firstTargetLocation.lon });
+                 if (data && data.length > 0 && data[0].admin_suggestions) {
+                    elements.userViewFeedbackContent.innerHTML = marked.parse(data[0].admin_suggestions);
+                    showElement(elements.userViewReportFeedbackSection);
+                 } else {
+                    hideElement(elements.userViewReportFeedbackSection);
+                 }
             } else {
-                showElement(document.getElementById('briefing-placeholder')); hideElement(document.getElementById('briefing-content'));
+                 hideElement(elements.userViewReportFeedbackSection);
             }
         }
+        
+        // --- EVENT LISTENERS ---
+        function setupEventListeners() {
+            setupModal('login-modal-overlay', 'close-modal-btn');
+            setupModal('confirm-modal-overlay', 'confirm-modal-cancel-btn');
+            setupModal('edit-report-modal-overlay', 'close-edit-report-modal-btn');
+            setupModal('report-details-modal-overlay', 'close-report-details-modal-btn');
 
-        function updateBriefingCard(targetId) {
-            document.querySelectorAll('.mission-target-item').forEach(el => el.classList.toggle('bg-sky-100', el.dataset.targetId === targetId));
-            const data = missionData.find(d => d.id === targetId);
-            if (!data) return;
+            elements.adminLoginBtn.addEventListener('click', () => showModal('login-modal-overlay'));
+            elements.logoutBtn.addEventListener('click', () => { currentUser.role = 'user'; renderAppForRole(); });
 
-            hideElement(document.getElementById('briefing-placeholder')); showElement(document.getElementById('briefing-content'));
-            
-            document.getElementById('briefing-title').textContent = data.id;
-            document.getElementById('briefing-subtitle').textContent = `การไฟฟ้า: ${data.authority}`;
-            document.getElementById('briefing-loss-badge').innerHTML = `<span class="block text-sm font-normal text-red-700">Loss</span> ${data.lossPercent.toFixed(1)}%`;
-            
-            const navBtn = document.getElementById('briefing-nav-btn');
-            if(data.lat && data.lon) {
-                navBtn.href = `https://www.google.com/maps/search/?api=1&query=${data.lat},${data.lon}`; navBtn.classList.remove('hidden');
-            } else { navBtn.classList.add('hidden'); }
-
-            document.getElementById('briefing-pf').innerHTML = `<strong>PF เฉลี่ย:</strong> <span class="font-semibold">${data.avgPF.toFixed(2)}</span>`;
-            document.getElementById('briefing-peak').innerHTML = `<strong>Peak:</strong> <span class="font-semibold">${data.peakPower.toLocaleString()} kW</span>`;
-            
-            if(briefingChart) briefingChart.destroy();
-            briefingChart = new ApexCharts(document.getElementById("briefing-daily-chart"), {
-                chart: { type: 'area', height: '100px', sparkline: { enabled: true }},
-                series: [{ name:'kWh', data: data.dailyData.map(d => d.energy_used) }], stroke: { curve: 'smooth', width: 2 },
-                tooltip: { y: { formatter: (val) => val.toLocaleString() + ' kWh' } }
+            elements.loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                if (username === 'admin' && password === 'admin123') {
+                    currentUser.role = 'admin';
+                    hideModal('login-modal-overlay');
+                    renderAppForRole();
+                    showSuccess('เข้าสู่ระบบสำเร็จ!');
+                } else {
+                    toggleElement(elements.loginError, true);
+                    elements.loginError.textContent = 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง';
+                }
             });
-            briefingChart.render();
+
+            [elements.transformerUrl, elements.meterUrl, elements.authorityInput, elements.startDateInput, elements.endDateInput, elements.monthInput].forEach(input => {
+                input?.addEventListener('input', validateInputs);
+            });
+
+            elements.meterUrl.addEventListener('input', () => {
+                const isValid = validateGoogleSheetUrl(elements.meterUrl.value.trim());
+                document.getElementById('detect-mappings-btn').disabled = !isValid;
+                document.getElementById('detect-btn-text').textContent = isValid ? 'ตรวจสอบการจับคู่' : 'ใส่ลิงก์มิเตอร์ก่อน';
+                 updateUrlStatus('meter', isValid);
+            });
+
+            elements.transformerUrl.addEventListener('input', () => {
+                updateUrlStatus('transformer', validateGoogleSheetUrl(elements.transformerUrl.value.trim()));
+            });
             
-            const meterList = document.getElementById('briefing-meters-list');
-            meterList.innerHTML = '';
-            (data.meterBreakdown || []).forEach(m => {
-                const isSuspicious = m.energy <= 0;
-                meterList.innerHTML += `<li class="${isSuspicious ? 'text-red-600 font-bold' : 'text-gray-600'}"> - ${m.meterId}: ${m.energy.toLocaleString()} kWh ${isSuspicious ? '❗️' : ''}</li>`;
+            document.getElementById('detect-mappings-btn').addEventListener('click', detectMappingsFromUrls);
+            elements.calculateBtn.addEventListener('click', calculateLoss);
+            elements.deleteBtn.addEventListener('click', deleteCurrentAnalysis);
+
+            elements.showEditReportModalBtn.addEventListener('click', () => showModal('edit-report-modal-overlay'));
+            elements.editReportForm.addEventListener('submit', handleSaveReport);
+            elements.saveAdminSuggestionBtn.addEventListener('click', handleSaveAdminSuggestion);
+            elements.deleteReportBtn.addEventListener('click', () => handleDeleteReport(currentReportId));
+            
+            elements.analyzeReportBtn.addEventListener('click', handleAnalyzeReport);
+            
+            elements.useAiAnalysisAsSuggestionBtn.addEventListener('click', () => {
+                if (currentReportAiAnalysisText) {
+                    elements.adminSuggestions.value = currentReportAiAnalysisText.trim();
+                    elements.adminSuggestions.focus();
+                    showSuccess('คัดลอกบทวิเคราะห์ไปยังช่องข้อเสนอแนะแล้ว');
+                } else {
+                    showError('ไม่มีข้อมูลบทวิเคราะห์ที่จะใช้งานได้');
+                }
+            });
+
+            elements.generateActionPlanBtn.addEventListener('click', generateActionPlan);
+
+            // Meter Chart Tabs
+            elements.topMetersTab.addEventListener('click', () => {
+                elements.topMetersTab.classList.add('active');
+                elements.suspiciousMetersTab.classList.remove('active');
+                showElement(elements.topMetersContent);
+                hideElement(elements.suspiciousMetersContent);
+                elements.meterChartTitle.textContent = '10 อันดับมิเตอร์ที่ใช้พลังงานสะสมสูงสุด';
+                elements.meterChartSubtitle.textContent = 'ข้อมูลสะสมจากทุกเดือนที่บันทึกไว้';
+            });
+            elements.suspiciousMetersTab.addEventListener('click', () => {
+                elements.suspiciousMetersTab.classList.add('active');
+                elements.topMetersTab.classList.remove('active');
+                showElement(elements.suspiciousMetersContent);
+                hideElement(elements.topMetersContent);
+                elements.meterChartTitle.textContent = 'มิเตอร์ที่น่าสงสัย';
+                elements.meterChartSubtitle.textContent = 'มิเตอร์ที่มียอดใช้พลังงานสะสมเป็น 0 หรือติดลบ';
             });
         }
         
-        // --- CHART FUNCTIONS (kept for detail view) ---
-        function renderTrendChart(data) { /* ... (function unchanged) ... */ }
-        function renderMeterChart(historicalData) { /* ... (function unchanged) ... */ }
-        function renderSuspiciousMeterChart(historicalData) { /* ... (function unchanged) ... */ }
-        function renderHighestLossChart(allData) { /* ... (function unchanged) ... */ }
-        
-        // (Other helper functions remain unchanged)
-        function renderTransformerMap(data) { /* ... (function unchanged) ... */ }
-        async function callGeminiAPI(prompt) { /* ... (function unchanged) ... */ }
-        async function getAiAnalysis(results, avgLossPercent, dataSummary, historicalData) { /* ... (function unchanged) ... */ }
-        async function generateActionPlan() { /* ... (function unchanged) ... */ }
-        function populateSelectors(allData) { /* ... (function unchanged) ... */ }
-        function populateTransformerSelector(allData, selectedAuthority) { /* ... (function unchanged) ... */ }
-        function populateMonthSelector(allData, selectedAuthority, selectedTransformer) { /* ... (function unchanged) ... */ }
-        function getHistoricalDataForGroup(auth, trans) { /* ... (function unchanged) ... */ }
-        async function loadSelectedData() { /* ... (function unchanged) ... */ }
-        function deleteCurrentAnalysis() { /* ... (function unchanged) ... */ }
-        async function detectMappingsFromUrls() { /* ... (function unchanged) ... */ }
-        async function handleSaveReport(event) { /* ... (function unchanged) ... */ }
-        async function fetchAndDisplayReports() { /* ... (function unchanged) ... */ }
-        async function handleSaveAdminSuggestion() { /* ... (function unchanged) ... */ }
-        async function handleAnalyzeReport() { /* ... (function unchanged) ... */ }
-        async function handleDeleteReport(reportId) { /* ... (function unchanged) ... */ }
-        async function checkAndDisplayFeedback() { /* ... (function unchanged) ... */ }
-        function setupEventListeners() { /* ... (function unchanged) ... */ }
-        function setupSelectorListeners(allData) { /* ... (function unchanged) ... */ }
-        function setupAdminTabs() { /* ... (function unchanged) ... */ }
-        function updateUrlStatus(type, isValid) { /* ... (function unchanged) ... */ }
+        function setupSelectorListeners(allData) {
+            // ++ MODIFIED ++: This entire function is enhanced for auto-population
+            function clearInputFieldsAndTriggerUpdate() {
+                const fieldsToClear = [elements.transformerUrl, elements.meterUrl, elements.latitudeInput, elements.longitudeInput, elements.authorityInput];
+                fieldsToClear.forEach(field => {
+                    if (field) {
+                        field.value = '';
+                        field.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+                });
+            }
 
+            elements.viewAuthoritySelect.addEventListener('change', (e) => {
+                populateTransformerSelector(allData, e.target.value);
+                elements.viewMonthSelect.innerHTML = '<option value="">-- เลือกเดือน --</option>'; 
+                clearInputFieldsAndTriggerUpdate(); // ++ ADDED ++: Clear inputs when authority changes
+                loadSelectedData();
+            });
+
+            elements.viewTransformerSelect.addEventListener('change', (e) => {
+                const auth = elements.viewAuthoritySelect.value;
+                const trans = e.target.value;
+                populateMonthSelector(allData, auth, trans);
+                
+                // ++ ADDED ++: Auto-population logic
+                if (auth && trans && allData[auth]?.[trans]) {
+                    const months = Object.keys(allData[auth][trans]).sort();
+                    const latestMonth = months.pop(); // Get the most recent entry
+                    
+                    if(latestMonth) {
+                        const latestData = allData[auth][trans][latestMonth];
+                        
+                        // Populate Admin Input fields
+                        elements.authorityInput.value = latestData.authority || auth;
+                        elements.transformerUrl.value = latestData.transformer_url || '';
+                        elements.meterUrl.value = latestData.meter_url || '';
+                        elements.latitudeInput.value = latestData.latitude || '';
+                        elements.longitudeInput.value = latestData.longitude || '';
+                        
+                        // Trigger input events to update UI state (like button disability)
+                        [elements.authorityInput, elements.transformerUrl, elements.meterUrl].forEach(el => {
+                            el.dispatchEvent(new Event('input', { bubbles: true }));
+                        });
+                        showSuccess("โหลดข้อมูลล่าสุดของกลุ่มหม้อแปลงนี้แล้ว");
+                    }
+                } else {
+                     clearInputFieldsAndTriggerUpdate();
+                }
+                
+                loadSelectedData();
+            });
+
+            elements.viewMonthSelect.addEventListener('change', () => {
+                loadSelectedData();
+            });
+        }
+
+        function setupAdminTabs() {
+            const switchTab = (activeTab, inactiveTab, activeSection, inactiveSection) => {
+                activeTab.classList.add('active'); inactiveTab.classList.remove('active');
+                showElement(activeSection); hideElement(inactiveSection);
+            };
+            elements.adminConfigTab.addEventListener('click', () => switchTab(elements.adminConfigTab, elements.adminReportsTab, elements.adminConfigSection, elements.adminReportsSection));
+            elements.adminReportsTab.addEventListener('click', () => {
+                switchTab(elements.adminReportsTab, elements.adminConfigTab, elements.adminReportsSection, elements.adminConfigSection);
+                fetchAndDisplayReports();
+            });
+        }
+        
+        function updateUrlStatus(type, isValid) {
+            const statusEl = document.getElementById(`${type}-url-status`);
+            if (statusEl) {
+                statusEl.innerHTML = `${isValid ? '✔️' : '🔌'} ${type === 'transformer' ? 'หม้อแปลง' : 'มิเตอร์'}: ${isValid ? 'พร้อมใช้งาน' : 'ยังไม่ได้ใส่'}`;
+                statusEl.className = `px-2 py-1 rounded-full text-xs ${isValid ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`;
+            }
+        }
+        
         // --- STARTUP AND INITIALIZATION ---
         async function initializeDashboard() {
             console.log('🚀 Initializing dashboard...');
@@ -1369,15 +2744,22 @@
                 .on('postgres_changes', { event: '*', schema: 'public' }, 
                 (payload) => {
                     console.log('Change received!', payload);
-                    if(payload.table === 'analysis'){ fetchAndProcessInitialData(); }
-                    if(payload.table === 'edit_reports'){ if(currentUser.role === 'admin') { fetchAndDisplayReports(); } checkAndDisplayFeedback(); }
+                    if(payload.table === 'analysis'){
+                         fetchAndProcessInitialData();
+                    }
+                    if(payload.table === 'edit_reports'){
+                         if(currentUser.role === 'admin') { fetchAndDisplayReports(); }
+                         checkAndDisplayFeedback();
+                    }
                 })
                 .subscribe();
             
             console.log('✅ Dashboard initialized and listening for changes.');
         }
 
-        function validateGoogleSheetUrl(url) { return /^https:\/\/docs\.google\.com\/spreadsheets\/d\/[a-zA-Z0-9-_]+/.test(url); }
+        function validateGoogleSheetUrl(url) {
+            return /^https:\/\/docs\.google\.com\/spreadsheets\/d\/[a-zA-Z0-9-_]+/.test(url);
+        }
 
         document.addEventListener('DOMContentLoaded', initializeDashboard);
     </script>
