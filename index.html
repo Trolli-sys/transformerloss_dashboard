@@ -11,9 +11,9 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
-    <!-- ADD Google Maps API Script (已啟用 visualization library) -->
+    <!-- ADD Google Maps API Script -->
     <!-- !!! IMPORTANT: Replace YOUR_API_KEY_HERE with your actual Google Maps API Key !!! -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC-bqu1W2KS1GHq6uig66gcn-s0qcXNqHs&libraries=visualization"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC-bqu1W2KS1GHq6uig66gcn-s0qcXNqHs"></script>
     
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -843,42 +843,6 @@
                 </div>
             </section>
 
-            <!-- Heatmap with Time-Lapse Section -->
-            <section id="heatmap-section" class="hidden fade-in">
-                <div class="glass-card p-6 mb-8">
-                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4">
-                        <div>
-                            <h2 class="text-2xl font-bold text-gray-900 flex items-center">
-                                <svg class="w-6 h-6 text-red-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                                แผนที่ความร้อนของค่า Loss
-                            </h2>
-                            <p class="text-gray-500 mt-1">แสดงภาพรวมปัญหาเชิงพื้นที่ (ยิ่งสว่าง ยิ่งน่ากังวล)</p>
-                        </div>
-                        <div class="mt-3 sm:mt-0">
-                            <label for="heatmap-threshold" class="text-sm font-medium text-gray-700">แสดงเฉพาะ Loss > <span id="heatmap-threshold-value" class="font-bold">5</span>%</label>
-                            <input id="heatmap-threshold" type="range" min="1" max="30" value="5" class="w-full sm:w-48 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
-                        </div>
-                    </div>
-                    
-                    <div id="loss-heatmap-container" style="height: 500px;" class="rounded-lg bg-gray-100 w-full mt-4 border"></div>
-                    
-                    <div id="timelapse-controls" class="mt-4 pt-4 border-t border-gray-200 hidden">
-                        <div class="flex items-center space-x-4">
-                            <button id="play-pause-btn" class="p-2 rounded-full bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:bg-gray-400" disabled>
-                                <svg id="play-icon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.118v11.764a1.5 1.5 0 002.3 1.277l9.344-5.882a1.5 1.5 0 000-2.553L6.3 2.84z"></path></svg>
-                                <svg id="pause-icon" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M5.75 3a.75.75 0 00-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75V3.75A.75.75 0 007.25 3h-1.5zM12.75 3a.75.75 0 00-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75V3.75a.75.75 0 00-.75-.75h-1.5z"></path></svg>
-                            </button>
-                            <div class="flex-grow flex items-center space-x-2">
-                                <span id="timelapse-start-month" class="text-xs font-mono text-gray-500"></span>
-                                <input id="timelapse-slider" type="range" min="0" max="0" value="0" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" disabled>
-                                <span id="timelapse-end-month" class="text-xs font-mono text-gray-500"></span>
-                            </div>
-                            <div id="timelapse-current-month" class="font-bold text-gray-800 bg-gray-100 px-3 py-1 rounded-md text-sm w-28 text-center">-</div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
             <!-- Filter Controls -->
             <div class="glass-card p-6 mb-8">
                 <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
@@ -1191,10 +1155,6 @@
         let charts = { trend: null, meter: null, highestLoss: null, suspiciousMeter: null };
         let mapInstance = null; // For Google Map
         let mapMarker = null; // For Google Map Marker
-        let heatmap;
-        let monthlyHeatmapData = {};
-        let availableMonths = [];
-        let timelapseInterval = null;
         let analysisDone = false;
         let transformerMeterMappings = [];
         let currentAnalysisText = '';
@@ -1441,15 +1401,14 @@
             
             toggleElement(elements.deleteBtn, isAdmin && analysisDone && elements.viewMonthSelect.value);
 
+
             if (analysisDone) {
                 showElement(elements.overallSummarySection);
                 showElement(elements.highestLossSection);
-                showElement(document.getElementById('heatmap-section')); // แสดง Heatmap Section
                 hideElement(elements.userWaitingMessage);
             } else {
                 hideElement(elements.overallSummarySection);
                 hideElement(elements.highestLossSection);
-                hideElement(document.getElementById('heatmap-section')); // ซ่อน Heatmap Section
                 showElement(elements.userWaitingMessage);
             }
         }
@@ -1853,8 +1812,6 @@
             elements.summaryLossPercent.textContent = `${lossPercent.toFixed(2)}%`;
             
             renderHighestLossChart(allData);
-
-            prepareMonthlyHeatmapData(allData);
         }
 
         function updateKeyMetrics(data) {
@@ -1992,80 +1949,6 @@
             charts.highestLoss.render();
         }
 
-        function prepareMonthlyHeatmapData(allData) {
-            const monthlyData = {};
-            for (const authority in allData) {
-                for (const transformerKey in allData[authority]) {
-                    for (const month in allData[authority][transformerKey]) {
-                        if (!monthlyData[month]) monthlyData[month] = [];
-                        
-                        const data = allData[authority][transformerKey][month];
-                        if (data.latitude && data.longitude) {
-                            const lossPercent = data.totalTransformerEnergy > 0 ? (data.totalLoss / data.totalTransformerEnergy) * 100 : 0;
-                            if (lossPercent > 0) {
-                                monthlyData[month].push({
-                                    location: new google.maps.LatLng(data.latitude, data.longitude),
-                                    weight: lossPercent
-                                });
-                            }
-                        }
-                    }
-                }
-            }
-            monthlyHeatmapData = monthlyData;
-            availableMonths = Object.keys(monthlyData).sort();
-            setupTimelapseControls();
-        }
-
-        function renderHeatmapForMonth(monthIndex) {
-            if (!mapInstance) {
-                const mapOptions = { zoom: 10, center: { lat: 6.8941, lng: 101.4225 }, mapTypeId: 'satellite' };
-                mapInstance = new google.maps.Map(document.getElementById('loss-heatmap-container'), mapOptions);
-            }
-            if (monthIndex < 0 || monthIndex >= availableMonths.length) return;
-            
-            const month = availableMonths[monthIndex];
-            document.getElementById('timelapse-slider').value = monthIndex;
-            document.getElementById('timelapse-current-month').textContent = month;
-
-            if (heatmap) heatmap.setMap(null);
-
-            const dataForMonth = monthlyHeatmapData[month] || [];
-            const threshold = document.getElementById('heatmap-threshold').value;
-            const filteredData = dataForMonth.filter(p => p.weight >= threshold);
-            
-            heatmap = new google.maps.visualization.HeatmapLayer({ data: filteredData, map: mapInstance });
-            const gradient = ["rgba(0, 255, 255, 0)","rgba(0, 255, 255, 1)","rgba(0, 191, 255, 1)","rgba(0, 127, 255, 1)","rgba(0, 63, 255, 1)","rgba(0, 0, 255, 1)","rgba(0, 0, 223, 1)","rgba(0, 0, 191, 1)","rgba(0, 63, 127, 1)","rgba(0, 127, 63, 1)","rgba(0, 191, 0, 1)","rgba(127, 255, 0, 1)","rgba(255, 255, 0, 1)","rgba(255, 191, 0, 1)","rgba(255, 127, 0, 1)","rgba(255, 63, 0, 1)","rgba(255, 0, 0, 1)"];
-            heatmap.set("gradient", gradient);
-            heatmap.set("radius", 30);
-            heatmap.set("opacity", 0.8);
-        }
-
-        function setupTimelapseControls() {
-            const controls = document.getElementById('timelapse-controls');
-            const slider = document.getElementById('timelapse-slider');
-            const playBtn = document.getElementById('play-pause-btn');
-
-            if (availableMonths.length > 1) {
-                controls.classList.remove('hidden');
-                slider.max = availableMonths.length - 1;
-                slider.disabled = false;
-                playBtn.disabled = false;
-                document.getElementById('timelapse-start-month').textContent = availableMonths[0];
-                document.getElementById('timelapse-end-month').textContent = availableMonths[availableMonths.length - 1];
-                renderHeatmapForMonth(availableMonths.length - 1); // Start with latest month
-            } else if (availableMonths.length === 1) {
-                controls.classList.remove('hidden');
-                document.getElementById('timelapse-current-month').textContent = availableMonths[0];
-                slider.disabled = true;
-                playBtn.disabled = true;
-                 renderHeatmapForMonth(0);
-            } else {
-                controls.classList.add('hidden');
-                if (mapInstance) new google.maps.visualization.HeatmapLayer({ data: [], map: mapInstance });
-            }
-        }
-        
         function renderTrendChart(data) {
             if (charts.trend) charts.trend.destroy();
             const selectedAuthority = elements.viewAuthoritySelect.value;
@@ -2189,22 +2072,24 @@
                 hideElement(elements.mapNoData);
 
                 const position = { lat: lat, lng: lon };
-                
-                // Use heatmap instance if available, otherwise fallback to the normal map
-                const mapToUse = mapInstance || new google.maps.Map(elements.transformerMapContainer, { center: position, zoom: 16 });
-                
+
+                if (!mapInstance) {
+                    mapInstance = new google.maps.Map(elements.transformerMapContainer, {
+                        center: position,
+                        zoom: 16,
+                        mapId: 'TRANSFORMER_LOSS_MAP' // Optional: for cloud-based styling
+                    });
+                } else {
+                    mapInstance.setCenter(position);
+                }
+
                 if (mapMarker) {
                     mapMarker.setMap(null); // Remove previous marker
-                }
-                
-                // Do not recenter heatmap instance
-                if (!mapInstance || mapInstance.getDiv() !== document.getElementById('loss-heatmap-container')) {
-                     mapToUse.setCenter(position);
                 }
 
                 mapMarker = new google.maps.Marker({
                     position: position,
-                    map: mapToUse,
+                    map: mapInstance,
                     title: transformerIds,
                 });
 
@@ -2215,11 +2100,12 @@
                 mapMarker.addListener("click", () => {
                     infoWindow.open({
                         anchor: mapMarker,
-                        map: mapToUse,
+                        map: mapInstance,
                     });
                 });
                 
-                infoWindow.open({ anchor: mapMarker, map: mapToUse });
+                // Open it by default
+                infoWindow.open({ anchor: mapMarker, map: mapInstance });
 
             } else {
                 hideElement(elements.transformerMapContainer);
@@ -2753,49 +2639,6 @@ ${adminSuggestions || "ไม่มี"}
                 hideElement(elements.topMetersContent);
                 elements.meterChartTitle.textContent = 'มิเตอร์ที่น่าสงสัย';
                 elements.meterChartSubtitle.textContent = 'มิเตอร์ที่มียอดใช้พลังงานสะสมเป็น 0 หรือติดลบ';
-            });
-            
-            const heatmapSlider = document.getElementById('heatmap-threshold');
-            const heatmapValueLabel = document.getElementById('heatmap-threshold-value');
-            heatmapSlider.addEventListener('input', (e) => {
-                heatmapValueLabel.textContent = e.target.value;
-            });
-            heatmapSlider.addEventListener('change', () => {
-                const currentMonthIndex = parseInt(document.getElementById('timelapse-slider').value) || 0;
-                renderHeatmapForMonth(currentMonthIndex); 
-            });
-
-            const playBtn = document.getElementById('play-pause-btn');
-            const timelapseSlider = document.getElementById('timelapse-slider');
-            const playIcon = document.getElementById('play-icon');
-            const pauseIcon = document.getElementById('pause-icon');
-
-            playBtn.addEventListener('click', () => {
-                if (timelapseInterval) {
-                    clearInterval(timelapseInterval);
-                    timelapseInterval = null;
-                    playIcon.classList.remove('hidden');
-                    pauseIcon.classList.add('hidden');
-                } else {
-                    playIcon.classList.add('hidden');
-                    pauseIcon.classList.remove('hidden');
-                    timelapseInterval = setInterval(() => {
-                        let nextIndex = parseInt(timelapseSlider.value) + 1;
-                        if (nextIndex >= availableMonths.length) nextIndex = 0;
-                        timelapseSlider.value = nextIndex;
-                        renderHeatmapForMonth(nextIndex);
-                    }, 1500);
-                }
-            });
-
-            timelapseSlider.addEventListener('input', (e) => {
-                if (timelapseInterval) {
-                    clearInterval(timelapseInterval);
-                    timelapseInterval = null;
-                    playIcon.classList.remove('hidden');
-                    pauseIcon.classList.add('hidden');
-                }
-                renderHeatmapForMonth(parseInt(e.target.value));
             });
         }
         
