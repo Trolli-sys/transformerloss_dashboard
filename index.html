@@ -1143,6 +1143,20 @@
                 </div>
             </div>
         </main>
+            <!-- ========== FOOTER SECTION ========== -->
+            <footer id="page-footer" class="bg-white/60 backdrop-blur-sm border-t border-gray-200/70 mt-12 py-6">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                    <p class="text-sm text-gray-600">
+                        <span class="font-medium text-gray-700">ดูแลและพัฒนาโดย:</span><br>
+                    แผนกบริการและงานธุรกิจ กองบริการลูกค้า
+                    </p>
+                    <p class="text-xs text-gray-400 mt-2">
+                        &copy; <span id="footer-year"></span> การไฟฟ้าส่วนภูมิภาค. สงวนลิขสิทธิ์.
+                    </p>
+                </div>
+            </footer>
+            <!-- ========== END FOOTER SECTION ========== -->
+            </div>
     </div>
 
     <script type="module">
@@ -2735,6 +2749,14 @@ ${adminSuggestions || "ไม่มี"}
             thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
             elements.startDateInput.valueAsDate = thirtyDaysAgo;
             elements.monthInput.value = new Date().toISOString().slice(0, 7);
+            
+            // ========== ADD THIS LINE ==========
+            document.getElementById('footer-year').textContent = new Date().getFullYear();
+            // ===================================
+                
+            await fetchAndProcessInitialData();
+            
+            supabase.channel('public-changes')
                 
             await fetchAndProcessInitialData();
             
