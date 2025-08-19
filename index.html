@@ -1442,7 +1442,7 @@
             }
         }
         
-        async function fetchAndProcessInitialData() {
+                async function fetchAndProcessInitialData() {
             const { data, error } = await supabase.from('analysis').select('*');
             if (error) {
                 console.error("Error fetching initial data:", error);
@@ -1453,6 +1453,13 @@
             allAnalysisData = {};
             let hasData = false;
             data.forEach(row => {
+                // START FIX: Add a check to ensure row.doc_id exists before processing
+                if (!row.doc_id) {
+                    console.warn('Skipping row with null doc_id:', row);
+                    return; // Skip this iteration if doc_id is null or undefined
+                }
+                // END FIX
+
                 const analysisData = row.data;
                 const parts = row.doc_id.split('_');
                 if (parts.length < 4) return; // Skip malformed doc_ids
@@ -1473,6 +1480,10 @@
                 }
                 allAnalysisData[region][authority][transformerKey][month] = analysisData;
                 hasData = true;
+            });
+            
+            // ... (rest of the function)
+        }
             });
             
             analysisDone = hasData;
