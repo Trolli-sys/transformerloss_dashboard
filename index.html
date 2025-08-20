@@ -1037,8 +1037,8 @@
 
                     <!-- AI Analysis -->
                     <div class="chart-container">
-                        <div class="flex justify-between items-start mb-4">
-                             <h3 class="text-lg font-bold text-gray-800 flex items-center">
+                        <div class="flex justify-between items-start">
+                             <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
                                 <svg class="w-5 h-5 text-purple-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
                                 </svg>
@@ -1046,65 +1046,51 @@
                             </h3>
                         </div>
 
-                        <!-- NEW: Button to trigger AI Analysis -->
-                        <button id="generate-ai-analysis-btn" class="btn-secondary w-full hidden">
-                            <div id="generate-ai-spinner" class="ai-spinner hidden" style="width:16px; height:16px; border-width:2px;"></div>
-                            <span id="generate-ai-btn-text">🔍 แสดงบทวิเคราะห์ AI</span>
-                        </button>
+                        <div id="ai-analysis-loader" class="flex flex-col items-center justify-center h-64">
+                            <div class="ai-spinner mb-4"></div>
+                            <p class="text-gray-500 text-center">กำลังวิเคราะห์ข้อมูลด้วย AI...</p>
+                        </div>
 
-                        <!-- This wrapper will contain all AI-generated content -->
-                        <div id="ai-analysis-wrapper" class="hidden">
-                            <div id="ai-analysis-loader" class="flex flex-col items-center justify-center h-64">
-                                <div class="ai-spinner mb-4"></div>
-                                <p class="text-gray-500 text-center">กำลังวิเคราะห์ข้อมูลด้วย AI...</p>
-                            </div>
+                        <div id="ai-analysis-content" class="prose max-w-none text-gray-600 hidden"></div>
+                        
+                        <div id="action-buttons-container" class="mt-4 space-y-2 hidden">
+                            <button id="generate-action-plan-btn" class="btn-primary w-full">✨ สร้างแผนปฏิบัติการ</button>
+                            <button id="show-edit-report-modal-btn" class="btn-secondary w-full">📝 บันทึกการแก้ไขตามบทวิเคราะห์</button>
+                        </div>
 
-                            <div id="ai-analysis-content" class="prose max-w-none text-gray-600 hidden relative">
-                                <!-- NEW: Close button for AI Analysis -->
-                                <button id="close-ai-analysis-btn" class="absolute -top-2 -right-2 text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full bg-gray-100 hover:bg-gray-200">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                </button>
-                                <!-- AI content will be injected here -->
-                            </div>
-                            
-                            <div id="action-buttons-container" class="mt-4 space-y-2 hidden">
-                                <button id="generate-action-plan-btn" class="btn-primary w-full">✨ สร้างแผนปฏิบัติการ</button>
-                                <button id="show-edit-report-modal-btn" class="btn-secondary w-full">📝 บันทึกการแก้ไขตามบทวิเคราะห์</button>
-                            </div>
-
-                            <div id="ai-analysis-error" class="hidden">
-                                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
-                                    <div class="flex">
-                                        <svg class="w-5 h-5 text-red-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                        <div class="ml-3">
-                                            <p class="text-sm text-red-700" id="ai-error-text"></p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Action Plan Section -->
-                            <div id="action-plan-section" class="mt-6 hidden">
-                                <h4 class="text-md font-bold text-gray-800 mb-4 flex items-center">
-                                    <svg class="w-5 h-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                        <div id="ai-analysis-error" class="hidden">
+                            <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                                <div class="flex">
+                                    <svg class="w-5 h-5 text-red-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                     </svg>
-                                    แผนปฏิบัติการ (Action Plan)
-                                </h4>
-                                <div id="action-plan-loader" class="flex flex-col items-center justify-center h-40 hidden">
-                                    <div class="ai-spinner mb-4"></div>
-                                    <p class="text-gray-500 text-center">กำลังสร้างแผนปฏิบัติการ...</p>
-                                </div>
-                                <div id="action-plan-content" class="prose max-w-none text-gray-600 hidden p-4 bg-gray-50 rounded-lg border"></div>
-                                <div id="action-plan-error" class="hidden">
-                                    <div class="bg-red-50 border border-red-200 rounded-lg p-4">
-                                        <p class="text-sm text-red-700" id="action-plan-error-text"></p>
+                                    <div class="ml-3">
+                                        <p class="text-sm text-red-700" id="ai-error-text"></p>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        
+                        <!-- Action Plan Section -->
+                        <div id="action-plan-section" class="mt-6 hidden">
+                            <h4 class="text-md font-bold text-gray-800 mb-4 flex items-center">
+                                <svg class="w-5 h-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                                </svg>
+                                แผนปฏิบัติการ (Action Plan)
+                            </h4>
+                            <div id="action-plan-loader" class="flex flex-col items-center justify-center h-40 hidden">
+                                <div class="ai-spinner mb-4"></div>
+                                <p class="text-gray-500 text-center">กำลังสร้างแผนปฏิบัติการ...</p>
+                            </div>
+                            <div id="action-plan-content" class="prose max-w-none text-gray-600 hidden p-4 bg-gray-50 rounded-lg border"></div>
+                            <div id="action-plan-error" class="hidden">
+                                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                                    <p class="text-sm text-red-700" id="action-plan-error-text"></p>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
@@ -1202,8 +1188,6 @@
         let allAnalysisData = {};
         let currentReportId = null;
         let currentReportAiAnalysisText = '';
-        let currentDataForAI = null; 
-        let historicalDataForAI = null; 
 
         // --- SUPABASE CONFIG ---
         const SUPABASE_URL = 'https://cqfpctbyosfrpipcntik.supabase.co';
@@ -1325,9 +1309,6 @@
             metricPeakDate: document.getElementById('metric-peak-date'),
 
             // AI Analysis elements
-            generateAiAnalysisBtn: document.getElementById('generate-ai-analysis-btn'),
-            closeAiAnalysisBtn: document.getElementById('close-ai-analysis-btn'),
-            aiAnalysisWrapper: document.getElementById('ai-analysis-wrapper'),
             aiLoader: document.getElementById('ai-analysis-loader'),
             aiContent: document.getElementById('ai-analysis-content'),
             aiError: document.getElementById('ai-analysis-error'),
@@ -1850,15 +1831,7 @@
             updateResultsTable(currentMonthData);
             renderCharts(currentMonthData, historicalData);
             renderTransformerMap(currentMonthData);
-            
-            currentDataForAI = currentMonthData;
-            historicalDataForAI = historicalData;
-            hideElement(elements.aiAnalysisWrapper);
-            showElement(elements.generateAiAnalysisBtn);
-            elements.generateAiAnalysisBtn.disabled = false;
-            document.getElementById('generate-ai-btn-text').textContent = '🔍 แสดงบทวิเคราะห์ AI';
-            hideElement(document.getElementById('generate-ai-spinner'));
-            
+            await getAiAnalysis(currentMonthData.results, avgLossPercent, currentMonthData.dataSummary, historicalData);
             await checkAndDisplayFeedback();
         }
 
@@ -2201,7 +2174,7 @@
         // --- AI ANALYSIS & ACTION PLAN (GEMINI API) ---
         async function callGeminiAPI(prompt) {
             const apiKey = "AIzaSyDwU3rcd0Lr5hS9BsBPcIXitu5YL-IEONQ";
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${apiKey}`;
             const response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -2222,6 +2195,7 @@
         }
 
         async function getAiAnalysis(results, avgLossPercent, dataSummary, historicalData) {
+            showElement(elements.aiLoader);
             hideElement(elements.aiContent);
             hideElement(elements.aiError);
             hideElement(elements.actionButtonsContainer);
@@ -2290,6 +2264,8 @@ ${summaryText}
                 console.error("AI Analysis Error:", error);
                 elements.aiErrorText.textContent = `เกิดข้อผิดพลาดในการวิเคราะห์: ${error.message}`;
                 showElement(elements.aiError);
+            } finally {
+                hideElement(elements.aiLoader);
             }
         }
         
