@@ -1,3 +1,17 @@
+Of course! I can certainly add a section for the regional summary to the dashboard. I've inserted the new HTML block and updated the JavaScript to calculate and display the data for each region accordingly.
+
+Here are the changes integrated into your code:
+
+- **Added HTML Section**: A new section with the ID `regional-summary-section` has been added directly below the "ภาพรวมข้อมูลทั้งหมด (ล่าสุด)" section. It includes a title and a container for the regional data cards.
+- **Updated JavaScript**:
+    - The `elements` object now includes references to the new section and its container.
+    - A new function, `calculateAndRenderRegionalSummary`, has been created to iterate through your data, calculate key metrics for each region, and dynamically generate summary cards.
+    - This new function is called whenever the initial data is processed, ensuring the regional summary appears along with the overall summary.
+    - The visibility of the new section is managed to only show when there is data available to display.
+
+Here is the updated code:
+
+```html
 <!DOCTYPE html>
 <html lang="th">
 
@@ -845,6 +859,19 @@
                 </div>
             </section>
             
+            <!-- Regional Summary Section -->
+            <section id="regional-summary-section" class="hidden fade-in">
+                <div class="glass-card p-6 mb-8">
+                    <h2 class="text-2xl font-bold text-gray-900 flex items-center mb-6">
+                        <svg class="w-6 h-6 text-indigo-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2h8a2 2 0 002-2v-1a2 2 0 012-2h1.945M7.707 9.293a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L15 8.414V14a1 1 0 11-2 0V8.414l-1.293 1.293a1 1 0 01-1.414 0z"></path></svg>
+                        ภาพรวมข้อมูลทั้งหมดแยกตามเขต กฟฟ. (ล่าสุด)
+                    </h2>
+                    <div id="regional-summary-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Regional data will be populated here by JavaScript -->
+                    </div>
+                </div>
+            </section>
+
             <!-- Highest Loss Chart Section -->
             <section id="highest-loss-section" class="hidden fade-in">
                 <div class="glass-card p-6 mb-8">
@@ -1280,6 +1307,9 @@
             summaryEnergyIn: document.getElementById('summary-energy-in'),
             summaryTotalLoss: document.getElementById('summary-total-loss'),
             summaryLossPercent: document.getElementById('summary-loss-percent'),
+            regionalSummarySection: document.getElementById('regional-summary-section'),
+            regionalSummaryContainer: document.getElementById('regional-summary-container'),
+
 
             // Chart elements
             trendChart: document.getElementById('consumption-trend-chart'),
@@ -1433,10 +1463,12 @@
 
             if (analysisDone) {
                 showElement(elements.overallSummarySection);
+                showElement(elements.regionalSummarySection);
                 showElement(elements.highestLossSection);
                 hideElement(elements.userWaitingMessage);
             } else {
                 hideElement(elements.overallSummarySection);
+                hideElement(elements.regionalSummarySection);
                 hideElement(elements.highestLossSection);
                 showElement(elements.userWaitingMessage);
             }
@@ -1493,6 +1525,7 @@
             analysisDone = hasData;
             renderAppForRole();
             calculateAndDisplayOverallSummary(allAnalysisData);
+            calculateAndRenderRegionalSummary(allAnalysisData);
             
             setupSelectorListeners(allAnalysisData); 
 
@@ -1871,6 +1904,70 @@
             elements.summaryLossPercent.textContent = `${lossPercent.toFixed(2)}%`;
             
             renderHighestLossChart(allData);
+        }
+
+        function calculateAndRenderRegionalSummary(allData) {
+            if (!allData || Object.keys(allData).length === 0) {
+                hideElement(elements.regionalSummarySection);
+                return;
+            }
+
+            const container = elements.regionalSummaryContainer;
+            container.innerHTML = ''; // Clear previous results
+
+            for (const region in allData) {
+                let totalTransformers = 0;
+                let totalMeters = 0;
+                let totalEnergyOut = 0;
+                let totalEnergyIn = 0;
+                const uniqueTransformerGroups = new Set();
+                const authorities = allData[region];
+
+                for (const authority in authorities) {
+                    for (const transformerKey in authorities[authority]) {
+                        if (uniqueTransformerGroups.has(transformerKey)) continue;
+                        uniqueTransformerGroups.add(transformerKey);
+                        
+                        const latestMonth = Object.keys(authorities[authority][transformerKey]).sort().pop();
+                        if (latestMonth) {
+                            const latestData = authorities[authority][transformerKey][latestMonth];
+                            totalTransformers += latestData.transformerCount || 0;
+                            totalMeters += latestData.meterCount || 0;
+                            totalEnergyOut += latestData.totalTransformerEnergy || 0;
+                            totalEnergyIn += latestData.totalMeterEnergy || 0;
+                        }
+                    }
+                }
+
+                const totalLoss = totalEnergyOut - totalEnergyIn;
+                const lossPercent = totalEnergyOut > 0 ? (totalLoss / totalEnergyOut) * 100 : 0;
+
+                const regionCard = document.createElement('div');
+                regionCard.className = 'bg-gray-50/50 rounded-xl border border-gray-200 p-4';
+                regionCard.innerHTML = `
+                    <h3 class="font-bold text-lg text-indigo-700 mb-3">${region}</h3>
+                    <div class="grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                            <div class="text-xs text-gray-500">หม้อแปลง</div>
+                            <div class="font-semibold text-gray-800 text-lg">${totalTransformers.toLocaleString()}</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-gray-500">มิเตอร์</div>
+                            <div class="font-semibold text-gray-800 text-lg">${totalMeters.toLocaleString()}</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-gray-500">Loss รวม (kWh)</div>
+                            <div class="font-semibold text-gray-800 text-lg">${totalLoss.toLocaleString('en-US', { maximumFractionDigits: 0 })}</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-gray-500">Loss (%)</div>
+                            <div class="font-semibold text-lg ${lossPercent > 10 ? 'text-red-600' : lossPercent > 5 ? 'text-orange-500' : 'text-green-600'}">${lossPercent.toFixed(2)}%</div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(regionCard);
+            }
+            showElement(elements.regionalSummarySection);
         }
 
         function updateKeyMetrics(data) {
