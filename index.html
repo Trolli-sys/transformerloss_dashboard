@@ -1,17 +1,3 @@
-Of course! I can certainly add a section for the regional summary to the dashboard. I've inserted the new HTML block and updated the JavaScript to calculate and display the data for each region accordingly.
-
-Here are the changes integrated into your code:
-
-- **Added HTML Section**: A new section with the ID `regional-summary-section` has been added directly below the "ภาพรวมข้อมูลทั้งหมด (ล่าสุด)" section. It includes a title and a container for the regional data cards.
-- **Updated JavaScript**:
-    - The `elements` object now includes references to the new section and its container.
-    - A new function, `calculateAndRenderRegionalSummary`, has been created to iterate through your data, calculate key metrics for each region, and dynamically generate summary cards.
-    - This new function is called whenever the initial data is processed, ensuring the regional summary appears along with the overall summary.
-    - The visibility of the new section is managed to only show when there is data available to display.
-
-Here is the updated code:
-
-```html
 <!DOCTYPE html>
 <html lang="th">
 
