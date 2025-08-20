@@ -924,9 +924,9 @@
                         <div class="p-4 bg-red-50 rounded-xl border border-red-200">
                             <h3 class="font-bold text-lg text-red-800 mb-3 flex items-center">
                                 <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                                ควรตรวจสอบเร่งด่วน (Loss สูง)
+                                ควรตรวจสอบเร่งด่วน (Loss > 10%)
                             </h3>
-                            <ul id="high-loss-list" class="space-y-2"></ul>
+                            <ul id="high-loss-list" class="space-y-4"></ul>
                         </div>
                         <!-- Negative Loss -->
                         <div class="p-4 bg-blue-50 rounded-xl border border-blue-200">
@@ -934,19 +934,20 @@
                                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.79 4 4s-1.79 4-4 4c-1.742 0-3.223-.835-3.772-2M12 5v.01M12 19v.01M21 12h-.01M3 12h-.01M21 3l-.01.01M3 21l-.01-.01M21 21l-.01-.01M3 3l-.01.01"></path></svg>
                                 น่าสงสัย (Loss ติดลบ)
                             </h3>
-                            <ul id="negative-loss-list" class="space-y-2"></ul>
+                            <ul id="negative-loss-list" class="space-y-4"></ul>
                         </div>
                         <!-- Low Loss -->
                         <div class="p-4 bg-green-50 rounded-xl border border-green-200">
                             <h3 class="font-bold text-lg text-green-800 mb-3 flex items-center">
                                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path></svg>
-                                ประสิทธิภาพดี (Loss ต่ำ)
+                                ประสิทธิภาพดี (Loss 0-5%)
                             </h3>
-                            <ul id="low-loss-list" class="space-y-2"></ul>
+                            <ul id="low-loss-list" class="space-y-4"></ul>
                         </div>
                     </div>
                 </div>
             </section>
+
 
             <!-- Filter Controls -->
             <div class="glass-card p-6 mb-8">
@@ -2085,11 +2086,10 @@
             renderMeterChart(historicalData);
             renderSuspiciousMeterChart(historicalData);
         }
-
+        
         function renderTransformerStatusLists(allData) {
             const latestLossData = [];
-            // ... (rest of data aggregation is the same as the old function)
-             for (const region in allData) {
+            for (const region in allData) {
                 for (const authority in allData[region]) {
                     for (const transformerKey in allData[region][authority]) {
                         const latestMonth = Object.keys(allData[region][authority][transformerKey]).sort().pop();
@@ -2098,11 +2098,12 @@
                             if (latestDataForGroup && latestDataForGroup.results) {
                                 latestDataForGroup.results.forEach(result => {
                                     latestLossData.push({
-                                        id: `${result.transformerId}-${authority}`,
+                                        id: `${result.transformerId}-${authority}`, // Create a more unique ID
                                         transformerId: result.transformerId,
                                         lossPercent: result.lossPercent || 0,
                                         lossKwh: result.loss || 0,
-                                        authority: authority 
+                                        authority: authority,
+                                        region: region
                                     });
                                 });
                             }
@@ -2111,41 +2112,51 @@
                 }
             }
             
+            // Remove duplicates based on the new unique ID
             const uniqueLossData = Array.from(new Map(latestLossData.map(item => [item.id, item])).values());
             
             const highLoss = uniqueLossData.filter(d => d.lossPercent > 10).sort((a,b) => b.lossPercent - a.lossPercent);
             const negativeLoss = uniqueLossData.filter(d => d.lossPercent < 0).sort((a,b) => a.lossPercent - b.lossPercent);
             const lowPositiveLoss = uniqueLossData.filter(d => d.lossPercent >= 0 && d.lossPercent <= 5).sort((a,b) => a.lossPercent - b.lossPercent);
 
-            const allAbsLoss = uniqueLossData.map(d => Math.abs(d.lossPercent));
-            const maxAbsLoss = Math.max(...allAbsLoss, 1); // Use 1 as minimum to avoid division by zero
-            
-            const populateList = (element, data, colorClass, maxItems = 5) => {
+            const populateList = (element, data, borderColorClass, maxItems = 5) => {
                 element.innerHTML = '';
                 if (data.length === 0) {
-                    element.innerHTML = '<li class="text-sm text-gray-500 text-center py-4">ไม่พบข้อมูล</li>';
+                    element.innerHTML = '<li class="text-sm text-gray-500 text-center py-4">ไม่พบข้อมูลในหมวดนี้</li>';
                     return;
                 }
                 data.slice(0, maxItems).forEach(item => {
-                    const barWidth = Math.min(100, (Math.abs(item.lossPercent) / maxAbsLoss) * 100);
+                    let lossPillClass;
+                    if (item.lossPercent < 0) lossPillClass = 'bg-blue-500 text-white';
+                    else if (item.lossPercent <= 5) lossPillClass = 'bg-green-500 text-white';
+                    else if (item.lossPercent <= 10) lossPillClass = 'bg-yellow-500 text-white';
+                    else lossPillClass = 'bg-red-500 text-white';
+
                     const li = document.createElement('li');
-                    li.className = 'text-sm';
+                    li.className = `bg-white rounded-lg p-3 border-l-4 ${borderColorClass} shadow-sm`;
                     li.innerHTML = `
-                        <div class="flex justify-between items-center mb-1">
-                            <span class="font-semibold text-gray-700 truncate pr-2">${item.transformerId}</span>
-                            <span class="font-bold ${colorClass.text}">${item.lossPercent.toFixed(2)}%</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-1.5">
-                            <div class="${colorClass.bg} h-1.5 rounded-full" style="width: ${barWidth}%"></div>
+                        <p class="font-bold text-gray-800 truncate">${item.transformerId}</p>
+                        <p class="text-xs text-gray-500">${item.region} > ${item.authority}</p>
+                        <div class="flex justify-between items-center mt-2 pt-2 border-t border-gray-100">
+                            <div>
+                                <p class="text-xs text-gray-500">Loss (kWh)</p>
+                                <p class="font-semibold text-gray-700">${item.lossKwh.toLocaleString(undefined, {maximumFractionDigits: 0})}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500 text-right">Loss (%)</p>
+                                <div class="px-2 py-0.5 rounded-full text-xs font-semibold ${lossPillClass}">
+                                    ${item.lossPercent.toFixed(2)}%
+                                </div>
+                            </div>
                         </div>
                     `;
                     element.appendChild(li);
                 });
             };
 
-            populateList(elements.highLossList, highLoss, {text: 'text-red-600', bg: 'bg-red-500'}, 5);
-            populateList(elements.negativeLossList, negativeLoss, {text: 'text-blue-600', bg: 'bg-blue-500'}, 5);
-            populateList(elements.lowLossList, lowPositiveLoss, {text: 'text-green-600', bg: 'bg-green-500'}, 3);
+            populateList(elements.highLossList, highLoss, 'border-red-500', 5);
+            populateList(elements.negativeLossList, negativeLoss, 'border-blue-500', 5);
+            populateList(elements.lowLossList, lowPositiveLoss, 'border-green-500', 3);
         }
 
         function renderTrendChart(data) {
