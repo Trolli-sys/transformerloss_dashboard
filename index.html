@@ -803,17 +803,10 @@
             <!-- Overall Summary Section -->
             <section id="overall-summary-section" class="hidden fade-in">
                 <div class="glass-card p-6 mb-8">
-                    <div class="flex items-center justify-between mb-6">
-                        <h2 class="text-2xl font-bold text-gray-900 flex items-center">
-                            <svg class="w-6 h-6 text-indigo-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2a4 4 0 00-4-4H3V7h2a4 4 0 004-4v-2m0 16l6-6m-6 6l6 6m-6-6H9m6 0h2a4 4 0 004-4V7h2a4 4 0 00-4-4h-2m-6 0l-6 6m6-6l-6-6"></path></svg>
-                            ภาพรวมข้อมูล
-                        </h2>
-                        <div class="w-1/4">
-                            <select id="summary-region-select" class="input-field text-sm">
-                                <option value="all">ภาพรวมทั้งหมด</option>
-                        <!-- ตัวเลือกเขตจะถูกเพิ่มโดย JavaScript -->
-                            </select>
-                        </div>
+                    <h2 class="text-2xl font-bold text-gray-900 flex items-center mb-6">
+                        <svg class="w-6 h-6 text-indigo-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2a4 4 0 00-4-4H3V7h2a4 4 0 004-4v-2m0 16l6-6m-6 6l6 6m-6-6H9m6 0h2a4 4 0 004-4V7h2a4 4 0 00-4-4h-2m-6 0l-6 6m6-6l-6-6"></path></svg>
+                        ภาพรวมข้อมูลทั้งหมด (ล่าสุด)
+                    </h2>
                     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                         <!-- Card 1: Total Transformers -->
                         <div class="p-4 bg-blue-50 rounded-xl border border-blue-200 text-center">
@@ -1281,7 +1274,6 @@
             userViewReportFeedbackSection: document.getElementById('user-view-report-feedback-section'),
             userViewFeedbackContent: document.getElementById('user-view-feedback-content'),
             overallSummarySection: document.getElementById('overall-summary-section'),
-            summaryRegionSelect: document.getElementById('summary-region-select'),
             summaryTotalTransformers: document.getElementById('summary-total-transformers'),
             summaryTotalMeters: document.getElementById('summary-total-meters'),
             summaryEnergyOut: document.getElementById('summary-energy-out'),
@@ -1339,14 +1331,6 @@
         function showElement(element) { if (element) element.classList.remove('hidden'); }
         function hideElement(element) { if (element) element.classList.add('hidden'); }
         function toggleElement(element, show) { show ? showElement(element) : hideElement(element); }
-
-        function populateSummaryRegionSelector(allData) {
-            const regions = Object.keys(allData).sort();
-            elements.summaryRegionSelect.innerHTML = '<option value="all">ภาพรวมทั้งหมด</option>'; // รีเซ็ตเป็นค่าเริ่มต้น
-            regions.forEach(region => {
-                elements.summaryRegionSelect.innerHTML += `<option value="${region}">${region}</option>`;
-            });
-        }
 
         function showToast(message, isError = false) {
             const toastDiv = document.createElement('div');
@@ -1508,7 +1492,6 @@
             
             analysisDone = hasData;
             renderAppForRole();
-            populateSummaryRegionSelector(allAnalysisData);
             calculateAndDisplayOverallSummary(allAnalysisData);
             
             setupSelectorListeners(allAnalysisData); 
@@ -1852,26 +1835,22 @@
             await checkAndDisplayFeedback();
         }
 
-        function calculateAndDisplayOverallSummary(allData, selectedRegion = 'all') {
+        function calculateAndDisplayOverallSummary(allData) {
             let totalTransformers = 0;
             let totalMeters = 0;
             let totalEnergyOut = 0;
             let totalEnergyIn = 0;
             const uniqueTransformerGroups = new Set();
 
-            const regionsToProcess = selectedRegion === 'all' ? Object.keys(allData) : [selectedRegion];
-
-            for (const region of regionsToProcess) {
-                if (!allData[region]) continue;
+            for (const region in allData) {
                 for (const authority in allData[region]) {
                     for (const transformerKey in allData[region][authority]) {
-                        const groupIdentifier = `${region}_${authority}_${transformerKey}`;
-                        if (uniqueTransformerGroups.has(groupIdentifier)) continue;
-                uniqueTransformerGroups.add(groupIdentifier);
-                
-                        const latestMonth = Object.keys(allData[region][authority][transformerKey]).sort().pop();
+                        if (uniqueTransformerGroups.has(transformerKey)) continue;
+                        uniqueTransformerGroups.add(transformerKey);
+                        
+                        const latestMonth = Object.keys(allAnalysisData[region][authority][transformerKey]).sort().pop();
                         if (latestMonth) {
-                            const latestData = allData[region][authority][transformerKey][latestMonth];
+                            const latestData = allAnalysisData[region][authority][transformerKey][latestMonth];
                             totalTransformers += latestData.transformerCount || 0;
                             totalMeters += latestData.meterCount || 0;
                             totalEnergyOut += latestData.totalTransformerEnergy || 0;
@@ -2660,9 +2639,6 @@ ${adminSuggestions || "ไม่มี"}
 
             elements.adminLoginBtn.addEventListener('click', () => showModal('login-modal-overlay'));
             elements.logoutBtn.addEventListener('click', () => { currentUser.role = 'user'; renderAppForRole(); });
-            elements.summaryRegionSelect.addEventListener('change', () => {
-                calculateAndDisplayOverallSummary(allAnalysisData, elements.summaryRegionSelect.value);
-            });
 
             elements.loginForm.addEventListener('submit', (e) => {
                 e.preventDefault();
