@@ -891,7 +891,7 @@
                 <div class="glass-card p-6 mb-8">
                     <h2 class="text-2xl font-bold text-gray-900 flex items-center mb-6">
                         <svg class="w-6 h-6 text-indigo-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2h8a2 2 0 002-2v-1a2 2 0 012-2h1.945M7.707 9.293a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L15 8.414V14a1 1 0 11-2 0V8.414l-1.293 1.293a1 1 0 01-1.414 0z"></path></svg>
-                        ภาพรวมแยกตามเขต (ล่าสุด)
+                        ภาพรวมรายเขต (ล่าสุด)
                     </h2>
                     <div class="overflow-x-auto">
                         <table class="data-table w-full">
@@ -912,11 +912,39 @@
                 </div>
             </section>
 
-
-            <!-- Highest Loss Chart Section -->
+            <!-- Highest Loss Transformers Section -->
             <section id="highest-loss-section" class="hidden fade-in">
                 <div class="glass-card p-6 mb-8">
-                    <div id="highest-loss-chart"></div>
+                    <h2 class="text-2xl font-bold text-gray-900 flex items-center mb-6">
+                        <svg class="w-6 h-6 text-purple-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.491l-2.072 2.072a4.5 4.5 0 01-6.364 6.364l-2.072 2.072a4.5 4.5 0 01-6.364-6.364l2.072-2.072a4.5 4.5 0 016.364 0z"></path></svg>
+                        สรุปสถานะหม้อแปลง (ล่าสุด)
+                    </h2>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- High Loss -->
+                        <div class="p-4 bg-red-50 rounded-xl border border-red-200">
+                            <h3 class="font-bold text-lg text-red-800 mb-3 flex items-center">
+                                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                ควรตรวจสอบเร่งด่วน (Loss สูง)
+                            </h3>
+                            <ul id="high-loss-list" class="space-y-2"></ul>
+                        </div>
+                        <!-- Negative Loss -->
+                        <div class="p-4 bg-blue-50 rounded-xl border border-blue-200">
+                            <h3 class="font-bold text-lg text-blue-800 mb-3 flex items-center">
+                               <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.79 4 4s-1.79 4-4 4c-1.742 0-3.223-.835-3.772-2M12 5v.01M12 19v.01M21 12h-.01M3 12h-.01M21 3l-.01.01M3 21l-.01-.01M21 21l-.01-.01M3 3l-.01.01"></path></svg>
+                                น่าสงสัย (Loss ติดลบ)
+                            </h3>
+                            <ul id="negative-loss-list" class="space-y-2"></ul>
+                        </div>
+                        <!-- Low Loss -->
+                        <div class="p-4 bg-green-50 rounded-xl border border-green-200">
+                            <h3 class="font-bold text-lg text-green-800 mb-3 flex items-center">
+                               <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path></svg>
+                                ประสิทธิภาพดี (Loss ต่ำ)
+                            </h3>
+                            <ul id="low-loss-list" class="space-y-2"></ul>
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -1246,7 +1274,7 @@
 
         // --- GLOBAL STATE ---
         let currentUser = { role: 'user' };
-        let charts = { trend: null, meter: null, highestLoss: null, suspiciousMeter: null };
+        let charts = { trend: null, meter: null, suspiciousMeter: null };
         let mapInstance = null; // For Google Map
         let mapMarker = null; // For Google Map Marker
         let analysisDone = false;
@@ -1357,7 +1385,9 @@
             suspiciousMeterChart: document.getElementById('suspicious-meter-chart'),
             noSuspiciousMeters: document.getElementById('no-suspicious-meters'),
             highestLossSection: document.getElementById('highest-loss-section'),
-            highestLossChart: document.getElementById('highest-loss-chart'),
+            highLossList: document.getElementById('high-loss-list'),
+            negativeLossList: document.getElementById('negative-loss-list'),
+            lowLossList: document.getElementById('low-loss-list'),
             transformerMapContainer: document.getElementById('transformer-map'),
             mapNoData: document.getElementById('map-no-data'),
             meterChartTitle: document.getElementById('meter-chart-title'),
@@ -1566,6 +1596,7 @@
             renderAppForRole();
             calculateAndDisplayOverallSummary(allAnalysisData);
             calculateAndRenderRegionalTable(allAnalysisData);
+            renderTransformerStatusLists(allAnalysisData);
             
             setupSelectorListeners(allAnalysisData); 
 
@@ -1942,8 +1973,6 @@
             elements.summaryEnergyIn.textContent = (totalEnergyIn || 0).toLocaleString('en-US', { maximumFractionDigits: 0 });
             elements.summaryTotalLoss.textContent = (totalLoss || 0).toLocaleString('en-US', { maximumFractionDigits: 0 });
             elements.summaryLossPercent.textContent = `${lossPercent.toFixed(2)}%`;
-            
-            renderHighestLossChart(allData);
         }
 
         function calculateAndRenderRegionalTable(allData) {
@@ -2057,11 +2086,10 @@
             renderSuspiciousMeterChart(historicalData);
         }
 
-        function renderHighestLossChart(allData) {
-            if (charts.highestLoss) charts.highestLoss.destroy();
+        function renderTransformerStatusLists(allData) {
             const latestLossData = [];
-
-            for (const region in allData) {
+            // ... (rest of data aggregation is the same as the old function)
+             for (const region in allData) {
                 for (const authority in allData[region]) {
                     for (const transformerKey in allData[region][authority]) {
                         const latestMonth = Object.keys(allData[region][authority][transformerKey]).sort().pop();
@@ -2070,8 +2098,10 @@
                             if (latestDataForGroup && latestDataForGroup.results) {
                                 latestDataForGroup.results.forEach(result => {
                                     latestLossData.push({
+                                        id: `${result.transformerId}-${authority}`,
                                         transformerId: result.transformerId,
                                         lossPercent: result.lossPercent || 0,
+                                        lossKwh: result.loss || 0,
                                         authority: authority 
                                     });
                                 });
@@ -2081,79 +2111,41 @@
                 }
             }
             
-            const uniqueLossData = Array.from(new Map(latestLossData.map(item => [item.transformerId, item])).values());
-            const topTenLoss = uniqueLossData.sort((a, b) => b.lossPercent - a.lossPercent).slice(0, 10);
+            const uniqueLossData = Array.from(new Map(latestLossData.map(item => [item.id, item])).values());
+            
+            const highLoss = uniqueLossData.filter(d => d.lossPercent > 10).sort((a,b) => b.lossPercent - a.lossPercent);
+            const negativeLoss = uniqueLossData.filter(d => d.lossPercent < 0).sort((a,b) => a.lossPercent - b.lossPercent);
+            const lowPositiveLoss = uniqueLossData.filter(d => d.lossPercent >= 0 && d.lossPercent <= 5).sort((a,b) => a.lossPercent - b.lossPercent);
 
-            if (topTenLoss.length === 0) {
-                elements.highestLossChart.innerHTML = '<div class="text-center py-10 text-gray-500">ไม่มีข้อมูลเพียงพอสำหรับแสดงกราฟ</div>';
-                return;
-            }
-
-            const getBarColor = (value) => {
-                if (value > 20) return '#b91c1c';
-                if (value > 15) return '#ef4444';
-                if (value > 10) return '#f97316';
-                if (value > 5) return '#f59e0b';
-                return '#10b981';
+            const allAbsLoss = uniqueLossData.map(d => Math.abs(d.lossPercent));
+            const maxAbsLoss = Math.max(...allAbsLoss, 1); // Use 1 as minimum to avoid division by zero
+            
+            const populateList = (element, data, colorClass, maxItems = 5) => {
+                element.innerHTML = '';
+                if (data.length === 0) {
+                    element.innerHTML = '<li class="text-sm text-gray-500 text-center py-4">ไม่พบข้อมูล</li>';
+                    return;
+                }
+                data.slice(0, maxItems).forEach(item => {
+                    const barWidth = Math.min(100, (Math.abs(item.lossPercent) / maxAbsLoss) * 100);
+                    const li = document.createElement('li');
+                    li.className = 'text-sm';
+                    li.innerHTML = `
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="font-semibold text-gray-700 truncate pr-2">${item.transformerId}</span>
+                            <span class="font-bold ${colorClass.text}">${item.lossPercent.toFixed(2)}%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-1.5">
+                            <div class="${colorClass.bg} h-1.5 rounded-full" style="width: ${barWidth}%"></div>
+                        </div>
+                    `;
+                    element.appendChild(li);
+                });
             };
 
-            const options = {
-                series: [{ name: 'Loss (%)', data: topTenLoss.map(d => d.lossPercent.toFixed(2)) }],
-                chart: { 
-                    type: 'bar', 
-                    height: 450, 
-                    toolbar: { 
-                        show: false
-                    },
-                    zoom: {
-                        enabled: false
-                    }
-                },
-                plotOptions: { bar: { columnWidth: '55%', borderRadius: 8, distributed: true } },
-                colors: topTenLoss.map(d => getBarColor(d.lossPercent)),
-                dataLabels: { 
-                    enabled: true, 
-                    formatter: (val) => val + "%", 
-                    offsetY: -20, 
-                    style: { 
-                        fontSize: '12px', 
-                        colors: ["#304758"] 
-                    } 
-                },
-                legend: { show: false },
-                xaxis: {
-                    categories: topTenLoss.map(d => d.transformerId),
-                    labels: {
-                        rotate: -65,
-                        rotateAlways: true,
-                        hideOverlappingLabels: true,
-                        trim: false,
-                        style: {
-                            fontSize: '11px',
-                            fontFamily: 'Sarabun, sans-serif',
-                        },
-                    },
-                    title: { text: 'รหัสหม้อแปลง' },
-                    tickPlacement: 'on'
-                },
-                yaxis: { title: { text: 'เปอร์เซ็นต์ Loss (%)' }, labels: { formatter: (val) => val.toFixed(0) + '%' } },
-                title: { text: '10 อันดับหม้อแปลงที่ค่า Loss สูงสุด', align: 'left', style: { fontSize: '22px', fontWeight: 'bold' } },
-                subtitle: { text: 'ข้อมูลล่าสุดจากผลการวิเคราะห์ทั้งหมดในระบบ', align: 'left', style: { color: '#6b7280' } },
-                tooltip: { 
-                    theme: 'dark', 
-                    y: { 
-                        formatter: function(val, opts) {
-                            const authority = topTenLoss[opts.dataPointIndex].authority;
-                            return `${val} % (การไฟฟ้า: ${authority})`
-                        }
-                    } 
-                },
-                grid: { borderColor: '#e5e7eb', strokeDashArray: 4 },
-                noData: { text: 'กำลังรอข้อมูล...' }
-            };
-
-            charts.highestLoss = new ApexCharts(elements.highestLossChart, options);
-            charts.highestLoss.render();
+            populateList(elements.highLossList, highLoss, {text: 'text-red-600', bg: 'bg-red-500'}, 5);
+            populateList(elements.negativeLossList, negativeLoss, {text: 'text-blue-600', bg: 'bg-blue-500'}, 5);
+            populateList(elements.lowLossList, lowPositiveLoss, {text: 'text-green-600', bg: 'bg-green-500'}, 3);
         }
 
         function renderTrendChart(data) {
